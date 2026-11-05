@@ -15,6 +15,8 @@ against **your own evidence** and draft a one-page CV or cover letter. Every dra
 - **Evidence first**: drafts can only use entries in `evidence/` that are marked `verified` or `stated`, `public-safe: yes`
   and have CV-ready wording. The model must list each claim with the evidence IDs behind it, and the app rejects drafts that
   cite unknown or ineligible IDs or whose claim list does not match the text. It cannot prove a claim is true: you still read every line.
+- **Easy to read**: CV Word files are laid out for quick reading (one page, clear section headings, dates on the right),
+  and trimming to one page deletes whole lines or Summary sentences only (page 2 only as a last resort), never rewording anything.
 - **One page**: the AI is asked for at most 520 words and the app rejects anything over 600. `cv_onepage.py` trims an
   existing CV to one page by deleting lines only (nothing is reworded, and a check refuses anything that was not already there).
 - **Cover letters need a sentiment** (or an explicit choice to go without), and the sentiment only changes tone.
@@ -55,7 +57,7 @@ and copy `rules.example.md` to `rules.md` before generating anything real.
 ## Repository map
 
 - `tools/hq-dashboard/server.py`: the protected local server and API; `write_queue.py`: durable spreadsheet saves;
-  `ai_tasks.py`: the typed task queue and Codex worker; `pc_files.py`: CV, cover-letter and report downloads and Word export; `docx_export.py`: the Word converters and marker rules; `cv_onepage.py`: one-page trimmer.
+  `ai_tasks.py`: the typed task queue and Codex worker; `pc_files.py`: CV, cover-letter and report downloads and Word export; `docx_export.py`: the Word converters and marker rules; `cv_onepage.py`: one-page trimmer; `cv_layout.py`: the shared CV Word style.
 - `tools/tracker/`: the page source (`index.html`) and the plain tracker server; `port_tracker.py --backend pc` builds the page the server serves.
 - `tools/hq-dashboard/hosted/`: page pieces. `data.js` and `tools.js` come from the original claude.ai-hosted version of this page;
   the PC build swaps the data layer for `pc-data.js` and `pc-tools.js`.

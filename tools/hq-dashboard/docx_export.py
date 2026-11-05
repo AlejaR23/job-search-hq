@@ -1,6 +1,7 @@
 """Plain .docx files for CVs, cover letters and reports, and the marker rules that keep notes out of them.
 CVs: headings, bullets, **bold**. Letters: plain paragraphs only. Reports: headings, bullets, tables as labelled lines."""
 import re
+from pathlib import Path
 
 import docx
 from docx.shared import Pt
@@ -77,8 +78,7 @@ def _plain_document():
         for part in (section.header, section.footer):
             for p in part.paragraphs:
                 p.text = ""
-    cp = d.core_properties
-    cp.author, cp.last_modified_by, cp.title, cp.subject, cp.keywords, cp.comments, cp.category = "", "", "", "", "", "", ""
+    cv_layout().neutral_properties(d)
     return d
 
 
@@ -115,26 +115,24 @@ def letter_to_docx(md, path):
     d.save(path)
 
 
+_layout = None
+
+
+def cv_layout():
+    # The one CV style, shared with cv_onepage.py (Claude · CV Layout Builder (Opus), 2026-11-05).
+    global _layout
+    if _layout is None:
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("hq_cv_layout", Path(__file__).resolve().parent / "cv_layout.py")
+        _layout = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(_layout)
+    return _layout
+
+
 def md_to_docx(md, path):
-    # Plain, ATS-friendly: headings, bullets, paragraphs, **bold** runs. Good enough for a draft to edit in Word or Pages.
-    d = _plain_document()
-    for line in clean_text(md).split("\n"):
-        s = line.rstrip()
-        if not s.strip() or re.fullmatch(r"\s*[-*_]{3,}\s*", s):
-            continue
-        m = re.match(r"^(#{1,3})\s+(.*)", s)
-        if m:
-            d.add_heading(m.group(2).strip(), level=len(m.group(1)))
-            continue
-        b = re.match(r"^\s*[-*•]\s+(.*)", s)
-        p = d.add_paragraph(style="List Bullet" if b else None)
-        text = b.group(1) if b else s
-        for part in re.split(r"(\*\*[^*]+\*\*)", text):
-            if part.startswith("**") and part.endswith("**") and len(part) > 4:
-                p.add_run(part[2:-2]).bold = True
-            elif part:
-                p.add_run(part)
-    d.save(path)
+    # A drafted CV in the same scannable style as the tailored CVs: Arial, name block, section headings with a thin
+    # rule, roles with right-aligned dates, real bullets. Exact marker lines are dropped first; no other word changes.
+    cv_layout().md_to_docx(clean_text(md), path)
 
 
 LINE_CAP = 2000  # a rendered report line or paragraph never exceeds this many characters
