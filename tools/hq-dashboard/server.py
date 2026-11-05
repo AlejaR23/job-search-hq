@@ -194,6 +194,11 @@ class App:
             return {'ok': True, 'row': row, 'id': payload['sheet'] + '|' + str(row), 'saved': saved, 'version': t.version()}
 
 
+def attachment(name):
+    # Header-safe ASCII file name; the bytes served never depend on it.
+    return {'Content-Disposition':'attachment; filename="'+(re.sub(r'[^A-Za-z0-9._-]','_',name) or 'document')+'"'}
+
+
 def handler(app):
     class Handler(BaseHTTPRequestHandler):
         def setup(self):
@@ -246,7 +251,25 @@ def handler(app):
                     return self.send(200, {'files':app.files.existing(app.cv_work)})
                 if self.path.startswith('/api/cvs/'):
                     path=app.files.existing_file(self.path.removeprefix('/api/cvs/'),app.cv_work)
-                    return self.send(200,path.read_bytes(),app.files.MIME,{'Content-Disposition':'attachment; filename="'+path.name+'"'})
+                    return self.send(200,path.read_bytes(),app.files.MIME,attachment(path.name))
+                # Documents tab (Claude · HQ Builder (Opus), 2026-11-05): CVs, cover letters and reports, all allowlisted.
+                if self.path == '/api/docs':
+                    docs=app.files.documents(app.cv_work)
+                    return self.send(200,{'cvs':[d for d in docs if d['kind']=='cv'],'letters':[d for d in docs if d['kind']=='cl'],
+                                          'reports':app.files.reports(app.cv_work)})
+                if self.path.startswith('/api/docs/'):
+                    path=app.files.existing_file(self.path.removeprefix('/api/docs/'),app.cv_work,('cv','cl'))
+                    return self.send(200,path.read_bytes(),app.files.MIME,attachment(path.name))
+                if self.path.startswith('/api/reports/'):
+                    key,_,fmt=self.path.removeprefix('/api/reports/').partition('/')
+                    if fmt=='':
+                        return self.send(200,app.files.report_view(key,app.cv_work))
+                    if fmt=='md':
+                        path,_=app.files.report_file(key,app.cv_work)
+                        return self.send(200,path.read_bytes(),app.files.MD_MIME,attachment(path.name))
+                    if fmt=='docx':
+                        name,body=app.files.report_docx(key,app.cv_work)
+                        return self.send(200,body,app.files.MIME,attachment(name))
                 return self.send(404)
             except ValueError:
                 return self.send(404, {'error':'Unknown document.'})
@@ -307,7 +330,7 @@ def handler(app):
                 if self.path=='/api/ai/export':
                     record=app.ai.posting(payload.get('id'))
                     path=app.files.export_draft(app.state,payload['id'],payload.get('kind'),record)
-                    return self.send(200,path.read_bytes(),app.files.MIME,{'Content-Disposition':'attachment; filename="'+path.name+'"'})
+                    return self.send(200,path.read_bytes(),app.files.MIME,attachment(path.name))
                 if self.path == '/api/writes/dismiss':
                     return self.send(200, {'write': app.queue.dismiss(payload.get('id'))})
                 item = app.queue.submit(self.path, payload)

@@ -1,31 +1,122 @@
-"""Allowlisted existing CV and draft exports."""
+"""Allowlisted existing CVs, cover letters, reports and draft exports.
+Updated by Claude · HQ Builder (Opus), 2026-11-05: cover letters (CL_*.docx) and reports
+(report-*.md) join the allowlist; a CV and its letter share a `pair` key; letters export as plain paragraphs.
+"""
 import hashlib
 import os
 import importlib.util
+import io
 from pathlib import Path
 import re
 
 HERE=Path(__file__).resolve().parent
 ROOT=HERE.parents[1]
 MIME='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+MD_MIME='text/markdown; charset=utf-8'
+PREFIX={'cv':'CV_','cl':'CL_'}
+DOC_LIMIT,REPORT_LIMIT=5*1024*1024,1024*1024
+_converter=None
 
 
-def existing(work=ROOT/'work'):
+def converter():
+    global _converter
+    if _converter is None:
+        spec=importlib.util.spec_from_file_location('hq_docx_converter',HERE/'docx_export.py')
+        module=importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        _converter=module
+    return _converter
+
+
+def _allowed(path,work,limit):
+    # Same rules for every listed file: a regular file directly inside work/, never a link, never too large.
+    try:
+        if path.is_symlink() or not path.is_file():return False
+        if path.resolve().parent!=work.resolve():return False
+        return path.stat().st_size<=limit
+    except OSError:
+        return False
+
+
+def _key(name):
+    return hashlib.sha256(name.encode()).hexdigest()[:24]
+
+
+_clean_cache={}
+
+
+def is_clean(path):
+    """False when a .docx holds an exact marker line (body, header or footer). Read-only; cached by mtime and size.
+    None when the file cannot be read as Word. Files on disk are never changed."""
+    st=path.stat()
+    key=(path.name,st.st_mtime_ns,st.st_size)
+    if key not in _clean_cache:
+        try:
+            import docx
+            d=docx.Document(path)
+            texts=[p.text for p in d.paragraphs]+[c.text for t in d.tables for r in t.rows for c in r.cells]
+            # Any header or footer text counts as notes: the owner wants no header block in a CV or letter file.
+            edge=[p.text for s in d.sections for part in (s.header,s.footer) for p in part.paragraphs]
+            edge+=[c.text for s in d.sections for part in (s.header,s.footer) for t in part.tables for r in t.rows for c in r.cells]
+            mark,tag=converter().marker_line,converter().has_known_tag
+            _clean_cache[key]=not any(x.strip() for x in edge) and not any(mark(line) or tag(line) for t in texts for line in t.split('\n'))
+        except Exception:
+            _clean_cache[key]=None
+        if len(_clean_cache)>500:_clean_cache.clear()
+    return _clean_cache[key]
+
+
+def documents(work=ROOT/'work'):
+    """CVs and cover letters. `pair` is the shared suffix, so CV_X.docx and CL_X.docx link."""
     out=[]
-    for path in sorted(work.glob('CV_*.docx')):
-        if path.is_symlink() or not path.resolve().is_relative_to(work.resolve()):continue
-        if path.stat().st_size>5*1024*1024:continue
-        key=hashlib.sha256(path.name.encode()).hexdigest()[:24]
-        title=path.stem.removeprefix('CV_').replace('_',' ')
-        out.append({'id':key,'name':path.name,'title':title,'company':title.split(' ')[0],
-                    'reviewed':False,'updated':str(path.stat().st_mtime_ns),'bytes':path.stat().st_size,'mime':MIME})
+    for kind,prefix in PREFIX.items():
+        for path in sorted(work.glob(prefix+'*.docx')):
+            if not path.name.startswith(prefix) or not _allowed(path,work,DOC_LIMIT):continue
+            pair=path.stem.removeprefix(prefix)
+            title=pair.replace('_',' ')
+            out.append({'id':_key(path.name),'kind':kind,'pair':pair,'name':path.name,'title':title,'company':title.split(' ')[0],
+                        'reviewed':False,'updated':str(path.stat().st_mtime_ns),'bytes':path.stat().st_size,'mime':MIME,
+                        'clean':is_clean(path)})
     return out
 
 
-def existing_file(key,work=ROOT/'work'):
-    item=next((item for item in existing(work) if item['id']==key),None)
+def existing(work=ROOT/'work'):
+    # /api/cvs keeps its old meaning: CVs only.
+    return [d for d in documents(work) if d['kind']=='cv']
+
+
+def existing_file(key,work=ROOT/'work',kinds=('cv',)):
+    item=next((item for item in documents(work) if item['id']==key and item['kind'] in kinds),None)
     if not item:raise ValueError('Unknown document.')
     return work/item['name']
+
+
+def reports(work=ROOT/'work'):
+    out=[]
+    for path in sorted(work.glob('report-*.md'),reverse=True):
+        if not path.name.startswith('report-') or not _allowed(path,work,REPORT_LIMIT):continue
+        title=re.sub(r'(\d{4}) (\d{2}) (\d{2})',r'\1-\2-\3',path.stem.removeprefix('report-').replace('-',' ').replace('_',' ')).strip()
+        out.append({'id':_key(path.name),'kind':'report','name':path.name,'title':title[:1].upper()+title[1:],
+                    'updated':str(path.stat().st_mtime_ns),'bytes':path.stat().st_size})
+    return out
+
+
+def report_file(key,work=ROOT/'work'):
+    item=next((item for item in reports(work) if item['id']==key),None)
+    if not item:raise ValueError('Unknown document.')
+    return work/item['name'],item
+
+
+def report_view(key,work=ROOT/'work'):
+    path,item=report_file(key,work)
+    return {**item,'blocks':converter().report_blocks(path.read_text(encoding='utf-8',errors='replace'))}
+
+
+def report_docx(key,work=ROOT/'work'):
+    path,item=report_file(key,work)
+    stream=io.BytesIO()
+    converter().report_to_docx(path.read_text(encoding='utf-8',errors='replace'),stream)
+    return path.stem+'.docx',stream.getvalue()
 
 
 def export_draft(state,posting_id,kind,record,copy_dir=None):
@@ -34,17 +125,17 @@ def export_draft(state,posting_id,kind,record,copy_dir=None):
     field='cv_markdown' if kind=='cv' else 'cover_letter_markdown'
     content=record.get('fit',{}).get(field)
     if not content:raise ValueError('Create this draft first.')
-    spec=importlib.util.spec_from_file_location('hq_docx_converter',HERE/'docx_export.py')
-    converter=importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(converter)
-    digest=hashlib.sha256(content.encode()).hexdigest()[:12]
-    name=f'{kind.upper()}_DRAFT_{posting_id}_{digest}.docx'
+    convert=converter().md_to_docx if kind=='cv' else converter().letter_to_docx
+    digest=hashlib.sha256((posting_id+'\n'+content).encode()).hexdigest()[:12]
+    company='_'.join(re.findall(r'[A-Za-z0-9]+',str(record.get('company') or '')))[:40] or 'Posting'
+    # No "DRAFT" in the file name: the file may be sent as is once it has been checked.
+    name=f"{'CV' if kind=='cv' else 'Cover_Letter'}_{company}_{digest}.docx"
     directory=state/'generated-documents'
     directory.mkdir(exist_ok=True)
     path=directory/name
     if not path.exists():
         temp=directory/(name+'.new.docx')
-        converter.md_to_docx(content,temp)
+        convert(content,temp)
         temp.replace(path)
     # Optional copy: set HQ_COPY_DIR to a synced folder. Content-addressed copies never overwrite an edited file.
     target=copy_dir if copy_dir is not None else (Path(os.environ['HQ_COPY_DIR']) if os.environ.get('HQ_COPY_DIR') else None)

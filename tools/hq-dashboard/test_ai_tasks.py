@@ -66,7 +66,7 @@ class CareerTasks(unittest.TestCase):
                      'claims':[{'text':'An invented claim.','evidence':['E-013']}]}
         self.tasks.submit({'kind':'cv','postingId':key,'requestId':str(uuid.uuid4())})
         self.tasks.process_one()
-        self.assertEqual(self.tasks.list_tasks()[0]['status'],'failed')
+        self.assertEqual(next(t for t in self.tasks.list_tasks() if t['kind']=='cv')['status'],'failed')
         self.assertNotIn('cv_markdown',self.tasks.posting(key)['fit'])
 
     def test_missing_analysis_and_invalid_photo(self):
@@ -84,6 +84,199 @@ class CareerTasks(unittest.TestCase):
         resumed.process_one()
         self.assertEqual(resumed.list_tasks()[0]['status'],'interrupted')
         self.assertEqual(self.calls,[])
+
+
+spec=importlib.util.spec_from_file_location('pc_files_fixture',HERE/'pc_files.py')
+files=importlib.util.module_from_spec(spec)
+spec.loader.exec_module(files)
+conv=files.converter()
+
+CLEAN_LETTER='''Dear Example Company team,
+
+I would like to apply for the Example Role. Fictional example skill is what I bring.
+
+Kind regards,
+Alex Example'''
+DIRTY_LETTER='''DRAFT
+Draft: awaiting truth review
+[HQ]
+**Sentiment:** Calm confidence
+Note: fictional reviewer note
+Word count: 40
+
+Dear Example Company team,
+
+> I would like to apply for the **Example Role**. Fictional example skill is what I bring.
+---
+Kind regards,
+Alex Example
+(About 40 words)
+Signed : Codex'''
+MARKERS=('Sentiment','Signed','DRAFT','Draft:','[HQ]','(About','Note:','Word count')
+# Real content that only looks like a marker: it must survive every check and converter unchanged.
+LOOKALIKES=['Signed 3 enterprise partners in a fictional pilot.','Sentiment analysis pipeline for fictional reviews.','Note-taking agent for fictional meetings.',
+            'Note that I relocated to a fictional city.','Built a fictional [RAG] prototype with [TODO list] tracking.','Drafted a fictional plan, 2026 (About the team).',
+            'Built a [RAG] evaluation harness for a fictional team.','Notes app for fictional field teams','(About the role) a fictional summary.','_Sentiment analysis_ in fictional reviews']
+
+
+class CleanDocuments(unittest.TestCase):
+    """Letters and CVs carry only the document."""
+    def setUp(self):
+        self.temp=tempfile.TemporaryDirectory(prefix='hq-docs-test-')
+        self.dir=Path(self.temp.name)
+
+    def tearDown(self):
+        self.temp.cleanup()
+
+    def read(self,path):
+        import docx
+        d=docx.Document(path)
+        text='\n'.join(p.text for p in d.paragraphs)
+        head='\n'.join(p.text for s in d.sections for part in (s.header,s.footer) for p in part.paragraphs)
+        return d,text,head
+
+    def test_letter_docx_is_plain_paragraphs_without_markers(self):
+        record={'company':'Example Company','fit':{'cover_letter_markdown':DIRTY_LETTER}}
+        path=files.export_draft(self.dir,str(uuid.uuid4()),'letter',record,copy_dir=self.dir/'no-copy_dir'/'Job Search')
+        self.assertNotIn('DRAFT',path.name)
+        d,text,head=self.read(path)
+        self.assertEqual({p.style.name for p in d.paragraphs},{'Normal'})
+        self.assertFalse(any(p.style.name.startswith(('Heading','Title')) for p in d.paragraphs))
+        for marker in MARKERS:self.assertNotIn(marker,text)
+        self.assertNotIn('**',text);self.assertNotIn('---',text);self.assertNotIn('>',text)
+        self.assertEqual(head.strip(),'')
+        self.assertIn('Dear Example Company team,',text)
+        self.assertIn('Kind regards,\nAlex Example',text)
+        self.assertEqual((d.styles['Normal'].font.name,d.styles['Normal'].font.size.pt),('Calibri',11))
+        self.assertEqual(d.core_properties.title,'')
+
+    def test_cv_docx_keeps_name_header_but_no_markers(self):
+        cv='# Alex Example\n[email] | [phone] | [LinkedIn URL]\n[DRAFT]\nNote: for the reviewer\n## Skills\n- Drafted fictional example plans\n- **Fictional** example skill'
+        path=files.export_draft(self.dir,str(uuid.uuid4()),'cv',{'company':'Example','fit':{'cv_markdown':cv}},copy_dir=self.dir/'none'/'x')
+        d,text,head=self.read(path)
+        self.assertEqual(d.paragraphs[0].text,'Alex Example')
+        self.assertIn('[LinkedIn URL]',text)
+        self.assertIn('Drafted fictional example plans',text)
+        self.assertNotIn('[DRAFT]',text);self.assertNotIn('Note:',text);self.assertEqual(head.strip(),'')
+
+    def test_validator_rejects_each_marker_and_accepts_clean(self):
+        self.assertIsNone(conv.draft_problem(CLEAN_LETTER,'letter'))
+        self.assertIsNone(conv.draft_problem('# Alex Example\n[email] | [phone]\n## Skills\n- Drafted plans','cv'))
+        bad={'# Cover letter':'letter','> quoted line':'letter','--- ':'letter','[HQ]':'letter','[DRAFT]':'cv','[/HQ]':'cv','[TODO] [PLACEHOLDER]':'letter',
+             '[REVIEWED]':'cv','Sentiment: warm':'letter','Signed : Codex':'cv','Note: check this':'letter','Notes: x':'cv','Word count: 210':'letter',
+             '(About 210 words)':'letter','(210 words)':'cv','DRAFT':'cv','Draft: v2':'letter','**Sentiment:** warm':'letter'}
+        for line in LOOKALIKES:
+            for kind in ('cv','letter'):
+                with self.subTest(lookalike=line,kind=kind):
+                    self.assertIsNone(conv.draft_problem(CLEAN_LETTER+'\n\n'+line,kind))
+        for line,kind in bad.items():
+            with self.subTest(line=line):
+                problem=conv.draft_problem(CLEAN_LETTER+'\n'+line,kind)
+                self.assertTrue(problem and problem.endswith('Try again.'),problem)
+
+    def test_report_blocks_escape_and_flatten(self):
+        md='# Fictional report\nIntro with **bold** and [a link](https://example.com/x).\n<script>alert(1)</script>\n\n| Company | Score |\n|---|---|\n| Example Co | 4.1 |\n\n- one\n- two'
+        blocks=conv.report_blocks(md)
+        self.assertEqual(blocks[0],{'type':'h','level':1,'runs':[['Fictional report',False]]})
+        flat=json.dumps(blocks)
+        self.assertIn('<script>alert(1)</script>',json.loads(flat)[1]['runs'][-1][0])
+        self.assertIn(['bold',True],blocks[1]['runs'])
+        self.assertIn('a link (https://example.com/x)',flat)
+        table=next(b for b in blocks if b['type']=='table')
+        self.assertEqual([(c['label'],c['runs'][0][0]) for c in table['rows'][0]],[('Company','Example Co'),('Score','4.1')])
+        import io,docx
+        stream=io.BytesIO();conv.report_to_docx(md,stream)
+        text='\n'.join(p.text for p in docx.Document(io.BytesIO(stream.getvalue())).paragraphs)
+        self.assertIn('Company: Example Co\nScore: 4.1',text)
+        self.assertNotIn('|',text)
+
+    def test_lookalike_content_survives_both_converters(self):
+        body='\n\n'.join(LOOKALIKES)
+        for kind,field in (('letter','cover_letter_markdown'),('cv','cv_markdown')):
+            path=files.export_draft(self.dir,str(uuid.uuid4()),kind,{'company':'Example','fit':{field:'Sentiment: warm\n\n'+body+'\n\n[DRAFT]'}},copy_dir=self.dir/'none'/'x')
+            _,text,_=self.read(path)
+            for line in LOOKALIKES:
+                with self.subTest(kind=kind,line=line):self.assertIn(line,text)
+            self.assertNotIn('Sentiment: warm',text);self.assertNotIn('[DRAFT]',text)
+
+    def test_existing_files_report_marker_lines(self):
+        import docx
+        clean,noted=self.dir/'CL_Example_Clean.docx',self.dir/'CL_Example_Noted.docx'
+        d=docx.Document();d.add_paragraph('Dear team,');[d.add_paragraph(x) for x in LOOKALIKES];d.save(clean)
+        d=docx.Document();d.add_paragraph('Dear team,');d.add_paragraph('Sentiment: warm');d.save(noted)
+        before={p:p.read_bytes() for p in (clean,noted)}
+        found={x['name']:x['clean'] for x in files.documents(self.dir)}
+        self.assertEqual(found,{clean.name:True,noted.name:False})
+        self.assertEqual(before,{p:p.read_bytes() for p in (clean,noted)},'Listing never changes a file')
+
+
+    def test_report_parsing_is_bounded_and_links_are_text(self):
+        import time
+        for hostile in ('['*40000,'!['*20000,('['*1000+'\n')*40):
+            start=time.perf_counter();conv.report_blocks(hostile);elapsed=time.perf_counter()-start
+            self.assertLess(elapsed,1.0,f'{hostile[:2]!r} took {elapsed:.2f}s')
+        self.assertTrue(all(len(r[0])<=2000 for b in conv.report_blocks('x'*50000) for r in b['runs']))
+        flat=json.dumps(conv.report_blocks('See [link](javascript:alert(3)) and [site](https://example.com/a).'))
+        self.assertIn('See link and site (https://example.com/a).',flat)
+        self.assertNotIn('javascript',flat)
+
+    def test_bulleted_and_emphasized_markers(self):
+        for line in ('- Sentiment: confident','* Signed : Codex','  - Note: check','_Signed : Codex_','**Signed :**','+ Draft: v2','• Word count: 210','> - **Notes:** x'):
+            for kind in ('cv','letter'):
+                with self.subTest(line=line,kind=kind):
+                    self.assertTrue(conv.marker_line(line))
+                    self.assertIsNotNone(conv.draft_problem(CLEAN_LETTER+'\n'+line,kind))
+            self.assertNotIn(line.strip(),conv.clean_text('Keep this.\n'+line))
+
+    def test_known_tag_inside_a_line(self):
+        for line in ('[HQ] Dear Example team,','Dear team, [HQ]','Fictional [DRAFT] skill','Done [/HQ]'):
+            with self.subTest(line=line):self.assertIsNotNone(conv.draft_problem(CLEAN_LETTER+'\n'+line,'letter'))
+        self.assertEqual(conv.clean_text('[HQ] Dear Example team,\nDear team, [HQ]\nA [TODO] fictional  [RAG] item [Note]'),
+                         'Dear Example team,\nDear team,\nA fictional [RAG] item [Note]')
+        path=files.export_draft(self.dir,str(uuid.uuid4()),'letter',{'company':'Example','fit':{'cover_letter_markdown':'[HQ] Dear Example team,\n\nBuilt a [RAG] harness. [DRAFT]'}},copy_dir=self.dir/'none'/'x')
+        _,text,_=self.read(path)
+        self.assertEqual(text,'Dear Example team,\nBuilt a [RAG] harness.')
+
+    def test_header_or_footer_text_is_not_clean(self):
+        import docx
+        for part in ('header','footer'):
+            path=self.dir/f'CV_Example_{part}.docx'
+            d=docx.Document();d.add_paragraph('Fictional body.');getattr(d.sections[0],part).paragraphs[0].text='Fictional '+part+' text';d.save(path)
+        plain=self.dir/'CV_Example_plain.docx'
+        d=docx.Document();d.add_paragraph('Fictional body.');d.save(plain)
+        found={x['name']:x['clean'] for x in files.documents(self.dir)}
+        self.assertEqual(found,{'CV_Example_header.docx':False,'CV_Example_footer.docx':False,plain.name:True})
+
+    def test_pairing_links_cv_and_letter(self):
+        import docx
+        for name in ('CV_Example_Ai_Engineer.docx','CL_Example_Ai_Engineer.docx','CV_Other_Role.docx'):
+            docx.Document().save(self.dir/name)
+        docs=files.documents(self.dir)
+        pairs={(d['kind'],d['pair']) for d in docs}
+        self.assertEqual(pairs,{('cv','Example_Ai_Engineer'),('cl','Example_Ai_Engineer'),('cv','Other_Role')})
+        self.assertEqual({d['kind'] for d in files.existing(self.dir)},{'cv'})
+        self.assertEqual(len({d['id'] for d in docs}),3)
+
+
+def _marker_letter_fails_and_clean_letter_saves(self):
+        key=self.analyze()
+        self.result={'cover_letter_markdown':'Sentiment: warm\n\n'+CLEAN_LETTER,'sources':['E-999'],'flags':[],
+                     'claims':[{'text':'Fictional example skill','evidence':['E-999']}]}
+        self.tasks.submit({'kind':'letter','postingId':key,'sentiment':'Warm','requestId':str(uuid.uuid4())})
+        self.tasks.process_one()
+        # Select by kind: two tasks can share a timestamp, so list order alone is not reliable.
+        task=next(t for t in self.tasks.list_tasks() if t['kind']=='letter')
+        self.assertEqual(task['status'],'failed')
+        self.assertIn('marker line',task['message'])
+        self.assertNotIn('cover_letter_markdown',self.tasks.posting(key)['fit'])
+        self.result=dict(self.result,cover_letter_markdown=CLEAN_LETTER)
+        self.tasks.submit({'kind':'letter','postingId':key,'sentiment':'Warm','requestId':str(uuid.uuid4())})
+        self.tasks.process_one()
+        self.assertEqual(sorted(t['status'] for t in self.tasks.list_tasks() if t['kind']=='letter'),['done','failed'])
+        self.assertIn('no bracket tags such as [HQ]',self.calls[-1][0])
+
+
+CareerTasks.test_marker_letter_fails_and_clean_letter_saves=_marker_letter_fails_and_clean_letter_saves
 
 
 if __name__=='__main__':unittest.main(verbosity=2)

@@ -18,6 +18,10 @@ against **your own evidence** and draft a one-page CV or cover letter. Every dra
 - **One page**: the AI is asked for at most 520 words and the app rejects anything over 600. `cv_onepage.py` trims an
   existing CV to one page by deleting lines only (nothing is reworded, and a check refuses anything that was not already there).
 - **Cover letters need a sentiment** (or an explicit choice to go without), and the sentiment only changes tone.
+- **Documents**: one tab lists your CVs (`work/CV_*.docx`), cover letters (`work/CL_*.docx`) and reports (`work/report-*.md`)
+  with phone-friendly downloads; reports can be read on the page and downloaded as .md or .docx. Exported files are clean
+  (no header, banner or note lines; letters are plain paragraphs), files that still contain notes are labelled, and a job's
+  detail links its CV and letter and has **Write a cover letter**. See `examples/` for a fictional letter and report.
 - **No auto-apply, no sending.** It never submits applications or messages. You press the buttons.
 
 ## Safety model (read this before putting it on the internet)
@@ -51,7 +55,7 @@ and copy `rules.example.md` to `rules.md` before generating anything real.
 ## Repository map
 
 - `tools/hq-dashboard/server.py`: the protected local server and API; `write_queue.py`: durable spreadsheet saves;
-  `ai_tasks.py`: the typed task queue and Codex worker; `pc_files.py`: CV downloads and Word export; `cv_onepage.py`: one-page trimmer.
+  `ai_tasks.py`: the typed task queue and Codex worker; `pc_files.py`: CV, cover-letter and report downloads and Word export; `docx_export.py`: the Word converters and marker rules; `cv_onepage.py`: one-page trimmer.
 - `tools/tracker/`: the page source (`index.html`) and the plain tracker server; `port_tracker.py --backend pc` builds the page the server serves.
 - `tools/hq-dashboard/hosted/`: page pieces. `data.js` and `tools.js` come from the original claude.ai-hosted version of this page;
   the PC build swaps the data layer for `pc-data.js` and `pc-tools.js`.

@@ -1,4 +1,5 @@
 /* PC career tasks. Server owns prompts and records. */
+let PC_LETTER='',CLS=[],REPORTS=[];
 async function pcState(){
  const data=await pcFetch('/api/ai/state');gotPostings(data.postings||[]);
  const running=data.tasks.find(t=>['queued','running'].includes(t.status));
@@ -14,7 +15,8 @@ async function pcInit(){
  PH={maxCount:5,maxInputBytes:8*1024*1024,mediaTypes:['image/jpeg','image/png']};
  $('#r-file').accept=PH.mediaTypes.join(',');$('#r-photos').hidden=false;renderThumbs();
  $('#r-go').disabled=false;$('#s-go').disabled=true;$('#s-go').title='On-demand search setup is pending';
- const [state,files]=await Promise.all([pcState(),pcFetch('/api/cvs')]);gotCvs(files.files);
+ /* A server started before the Documents routes existed still lists CVs (the page file is read on every request). */
+ const [state,files]=await Promise.all([pcState(),pcFetch('/api/docs').catch(()=>pcFetch('/api/cvs').then(d=>({cvs:d.files})))]);pcDocs(files);
  const active=state.tasks.find(t=>['queued','running'].includes(t.status));
  if(active)pcResume(active.id,active.kind).catch(e=>toast(e.message,null,true));
 }
@@ -34,22 +36,83 @@ async function pcSubmit(payload){
 }
 analyze=async function(){
  if(OP)return;await IMGQ;$('#r-err').hidden=true;
+ /* The sentiment step opens after this analysis only when "Write a cover letter" started it for this job. */
+ if(PC_LETTER&&PC_LETTER!==REVIEW_JOB)PC_LETTER='';
  const posting={company:$('#r-company').value.trim(),role:$('#r-role').value.trim(),link:$('#r-link').value.trim(),text:$('#r-text').value.trim(),jobId:REVIEW_JOB||''};
  startOp('analyze','',null);
  try{const images=[];for(const image of await prepImages()){images.push(await new Promise((resolve,reject)=>{const r=new FileReader;r.onload=()=>resolve(String(r.result).split(',')[1]);r.onerror=reject;r.readAsDataURL(image)}))}
- const result=await pcSubmit({kind:'analyze',posting,images});if(result){$('#f-review').reset();clearImages();REVIEW_JOB='';store.set('rdraft',null);$('#r-msg').textContent='Analysis saved. Choose a document below if you want one.';$('#result').scrollIntoView({block:'start'})}
- }catch(e){$('#r-err').textContent=e.message;$('#r-err').hidden=false}finally{if(OP)endOp()}
+ const result=await pcSubmit({kind:'analyze',posting,images});if(result){$('#f-review').reset();clearImages();REVIEW_JOB='';store.set('rdraft',null);$('#r-msg').textContent='Analysis saved. Choose a document below if you want one.';$('#result').scrollIntoView({block:'start'});
+  /* "Write a cover letter" from a job: the sentiment step opens next. Nothing is written until he answers it. */
+  if(PC_LETTER){PC_LETTER='';CUR=result;openSent()}}
+ else PC_LETTER='';
+ }catch(e){PC_LETTER='';$('#r-err').textContent=e.message;$('#r-err').hidden=false}finally{if(OP)endOp()}
 };
 makeDoc=async function(kind,sentiment=''){
  if(OP||!CUR)return;startOp(kind,CUR._id,null);
  try{await pcSubmit({kind,postingId:CUR._id,sentiment,withoutSentiment:kind==='letter'&&!sentiment.trim()});if(kind==='letter')SENT.id='';renderResult(CUR)}
  catch(e){toast(e.message,null,true)}finally{if(OP)endOp()}
 };
-downloadCv=async function(id){location.assign('/api/cvs/'+encodeURIComponent(id))};
+/* Downloads stay on the page: fetch, then save the blob. A failure shows a message; the page never navigates away. */
+const PCDL=new Set();
+async function pcDownload(url,fallback,button){if(PCDL.has(url))return;PCDL.add(url);if(button)button.disabled=true;
+ try{const r=await fetch(url,{cache:'no-store'});if(r.status===401){location.assign('/login');return}
+  if(!r.ok)throw Error(r.status===404?'That file is not available. Reload the page; if it persists, HQ on the PC may need a restart.':'Could not download this file. Try again.');
+  const blob=await r.blob(),href=URL.createObjectURL(blob),a=document.createElement('a');a.href=href;a.download=(/filename="([^"]+)"/.exec(r.headers.get('Content-Disposition')||'')||[])[1]||fallback;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(href),30000)}
+ catch(x){toast(x.message||'Could not download this file.',null,true)}finally{PCDL.delete(url);if(button)button.disabled=false}}
+downloadCv=async function(id){return pcDownload('/api/cvs/'+encodeURIComponent(id),'CV.docx',null)};
+/* "Review fit + draft CV" never inherits a pending "Write a cover letter". */
+const pcReviewFromJob=reviewFromJob;reviewFromJob=function(j){PC_LETTER='';return pcReviewFromJob(j)};
 docBlock=function(title,which,text,extra=''){return `<section class="sec" data-sec="${which}"><div class="doc-h"><h3>${title}</h3><button class="btn ghost" type="button" data-doc="${which}" data-do="copy">Copy</button><button class="btn ghost" type="button" data-pc-doc="${which}">Download draft .docx</button></div><pre class="doc">${esc(text)}</pre>${extra}</section>`};
 document.addEventListener('click',async e=>{const b=e.target.closest('[data-pc-doc]');if(!b||!CUR)return;e.stopImmediatePropagation();b.disabled=true;
  try{const r=await fetch('/api/ai/export',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:CUR._id,kind:b.dataset.pcDoc==='cv'?'cv':'letter'})});
  if(!r.ok)throw Error('Could not export this draft. Sign in again if your session ended.');
  const blob=await r.blob(),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=(/filename="([^"]+)"/.exec(r.headers.get('Content-Disposition')||'')||[])[1]||'HQ_DRAFT.docx';a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);
  }catch(x){toast(x.message,null,true)}finally{b.disabled=false}},true);
+/* ---------- Documents tab: CVs, cover letters, reports. Claude · HQ Builder (Opus), 2026-11-05. ----------
+   Lists come from /api/docs (allowlisted files in work/). Downloads are fetched and saved as blobs; a report is
+   read as data blocks and built here with textContent only, never innerHTML of file content. */
+const pcPairs=()=>new Set([...CVS,...CLS].map(d=>d.kind+':'+d.pair));
+function pcDocRow(d,other){const has=pcPairs().has(other+':'+d.pair);
+ return `<li>${av(d.company,'sm')}<span class="t"><b>${esc(d.title)}</b><small>${esc(pcDate(d.updated))}${has?` · <span class="chip g">${other==='cl'?'Has a cover letter':'Has a CV'}</span>`:''}${d.clean===false?` · <span class="chip a" title="A line such as Sentiment:, Signed : or [DRAFT] is in this file. Check it before sending.">Has notes</span>`:''}</small></span><button class="btn pc-dl" type="button" data-pc-file="${esc(d.id)}" data-kind="${esc(d.kind)}" aria-label="Download ${esc(d.title)} ${d.kind==='cl'?'cover letter':'CV'}">${IC.dl}<span>Download</span></button></li>`}
+function pcDocs(data){
+ CVS=(Array.isArray(data.cvs)?data.cvs:[]).slice().sort((a,b)=>String(b.updated).localeCompare(String(a.updated))||String(a.title).localeCompare(String(b.title)));
+ CLS=(Array.isArray(data.letters)?data.letters:[]).slice().sort((a,b)=>String(b.updated).localeCompare(String(a.updated))||String(a.title).localeCompare(String(b.title)));
+ REPORTS=Array.isArray(data.reports)?data.reports:[];
+ $('#cvs').innerHTML=CVS.length?`<ul class="cvl">${CVS.map(d=>pcDocRow(d,'cl')).join('')}</ul>`:'<p class="mut">No CV files yet.</p>';
+ $('#cls').innerHTML=CLS.length?`<ul class="cvl">${CLS.map(d=>pcDocRow(d,'cv')).join('')}</ul>`:'<p class="mut">No cover letter files yet.</p>';
+ $('#reports').innerHTML=REPORTS.length?`<ul class="cvl">${REPORTS.map(r=>`<li><span class="t"><b>${esc(r.title)}</b><small>${esc(pcDate(r.updated))}</small></span><span class="pc-acts"><button class="btn" type="button" data-pc-read="${esc(r.id)}">Read</button><button class="btn ghost pc-dl" type="button" data-pc-report="${esc(r.id)}" data-fmt="md">${IC.dl}<span>.md</span></button><button class="btn ghost pc-dl" type="button" data-pc-report="${esc(r.id)}" data-fmt="docx">${IC.dl}<span>.docx</span></button></span></li>`).join('')}</ul>`:'<p class="mut">No reports yet.</p>';
+ if(READY&&($('#drawer').classList.contains('on')||S.view==='list'))render()}
+gotCvs=function(files){pcDocs({cvs:files,letters:CLS,reports:REPORTS})};
+/* A job's cover letter: same company rule as its CV (first word of the file suffix), and the CV's own pair first. */
+function clFor(j){const k=c=>alnum(c.company),cv=cvFor(j);
+ const hits=CLS.filter(c=>k(c)&&alnum(j.Company).startsWith(k(c)));
+ return hits.find(c=>cv&&c.pair===cv.pair)||hits.sort((a,b)=>cvMatch(j,b)-cvMatch(j,a))[0]}
+function pcJobDocs(j){const cl=clFor(j);
+ return `${cl?`<button class="btn ghost" type="button" data-pc-file="${esc(cl.id)}" data-kind="cl">${IC.dl}Download cover letter (.docx)</button>`:''}<button class="btn ghost" type="button" data-pc-letter="${esc(j._id)}">Write a cover letter</button>`}
+function pcWriteLetter(j){
+ const done=POSTINGS.filter(p=>p.jobId===j._id).sort((a,b)=>String(b.createdAt||'').localeCompare(String(a.createdAt||'')))[0];
+ if(done){if($('#drawer').classList.contains('on')&&closeDrawers()===false)return;S.view='review';render();CUR=done;openSent();return}
+ reviewFromJob(j);if(S.view!=='review')return;PC_LETTER=j._id;
+ const h=$('#r-hint');h.textContent='Writing a cover letter for '+(j.Company||'this job')+'. Paste the posting text or add a photo, then tap Analyze. Next you choose what the letter should transmit; nothing is written before that.';h.hidden=false}
+function pcRuns(el,runs){for(const r of Array.isArray(runs)?runs:[]){const t=String(r[0]??'');if(r[1]){const b=document.createElement('b');b.textContent=t;el.append(b)}else el.append(document.createTextNode(t))}}
+function pcReport(view){const box=$('#report-view');box.replaceChildren();
+ const head=document.createElement('div');head.className='doc-h';const h=document.createElement('h3');h.textContent=view.title||view.name;head.append(h);
+ const mk=(label,attrs)=>{const b=document.createElement('button');b.type='button';b.className='btn ghost';b.textContent=label;for(const[k,v]of Object.entries(attrs))b.setAttribute(k,v);head.append(b)};
+ mk('Download .md',{'data-pc-report':view.id,'data-fmt':'md'});mk('Download .docx',{'data-pc-report':view.id,'data-fmt':'docx'});mk('Close',{'data-pc-close':'1'});
+ const body=document.createElement('div');body.className='rep-body';
+ for(const b of Array.isArray(view.blocks)?view.blocks:[]){let n;
+  if(b.type==='h'){n=document.createElement('h'+(Math.min(3,Math.max(1,+b.level||1))+2));pcRuns(n,b.runs)}
+  else if(b.type==='p'){n=document.createElement('p');pcRuns(n,b.runs)}
+  else if(b.type==='ul'){n=document.createElement('ul');for(const it of b.items||[]){const li=document.createElement('li');pcRuns(li,it);n.append(li)}}
+  else if(b.type==='table'){n=document.createElement('ul');n.className='rep-rows';for(const row of b.rows||[]){const li=document.createElement('li');
+   for(const c of row){const line=document.createElement('div');if(c.label){const l=document.createElement('b');l.textContent=c.label+': ';line.append(l)}pcRuns(line,c.runs);li.append(line)}n.append(li)}}
+  if(n)body.append(n)}
+ box.append(head,body);box.hidden=false;box.scrollIntoView({block:'start'})}
+document.addEventListener('click',async e=>{const t=e.target.closest('[data-pc-file],[data-pc-report],[data-pc-read],[data-pc-close],[data-pc-letter]');if(!t)return;e.stopImmediatePropagation();e.preventDefault();
+ /* A CV goes through /api/cvs, which every HQ version serves; letters and reports need the Documents routes. */
+ if(t.dataset.pcFile)return pcDownload((t.dataset.kind==='cl'?'/api/docs/':'/api/cvs/')+encodeURIComponent(t.dataset.pcFile),t.dataset.kind==='cl'?'Cover_letter.docx':'CV.docx',t);
+ if(t.dataset.pcReport){const f=t.dataset.fmt==='docx'?'docx':'md';return pcDownload('/api/reports/'+encodeURIComponent(t.dataset.pcReport)+'/'+f,'report.'+f,t)}
+ if(t.dataset.pcClose){$('#report-view').hidden=true;return}
+ if(t.dataset.pcLetter){const j=byKey(t.dataset.pcLetter);if(j)pcWriteLetter(j);return}
+ t.disabled=true;try{pcReport(await pcFetch('/api/reports/'+encodeURIComponent(t.dataset.pcRead)))}catch(x){toast(x.message,null,true)}finally{t.disabled=false}},true);
 $('#f-search').addEventListener('submit',e=>{e.preventDefault();e.stopImmediatePropagation();toast('On-demand searches are awaiting setup. Your daily scan stays in place.',null,true)},true);

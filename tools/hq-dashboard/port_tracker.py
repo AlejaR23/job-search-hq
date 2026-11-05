@@ -176,8 +176,20 @@ def main():
         h = h.replace('Saved · syncs later', 'Saved to spreadsheet')
         h = h.replace('Draft: truth review later', 'Draft: awaiting separate truth review')
         h = sub(h, 'esc(c.updated)', 'esc(pcDate(c.updated))')
-        h = h.replace("They're also in your synced CVs folder, refreshed by the scan.",
-                      'Download your CVs here. New drafts can also be copied to a folder you choose (HQ_COPY_DIR).')
+        # Documents tab (Claude · HQ Builder (Opus), 2026-11-05): CVs, cover letters and reports; a job links its files.
+        h = sub(h, '<span class="l">CVs</span></button>\n </nav>', '<span class="l">Documents</span></button>\n </nav>')
+        h = sub(h, '<dd>Overview, Board, List, Contacts, Search, CVs</dd>', '<dd>Overview, Board, List, Contacts, Search, Documents</dd>')
+        h = sub(h, ' <div class="panel"><div class="panel-h"><h2>Your CVs</h2></div>\n'
+                   '  <p class="lede">Your tailored CVs as Word files. On the iPhone a download lands in Files › Downloads. They\'re also in your synced CVs folder, refreshed by the scan.</p>\n'
+                   '  <div id="cvs"><p class="mut">Loading…</p></div></div>',
+                ' <div class="panel" id="docs"><div class="panel-h"><h2>Your documents</h2></div>\n'
+                '  <p class="lede">Your CVs, cover letters and reports. Tap Download to save a file; on the iPhone it lands in Files › Downloads. Tap Read to open a report here.</p>\n'
+                '  <h3 class="doc-sec">CVs</h3><div id="cvs"><p class="mut">Loading…</p></div>\n'
+                '  <h3 class="doc-sec">Cover letters</h3><div id="cls"><p class="mut">Loading…</p></div>\n'
+                '  <h3 class="doc-sec">Reports</h3><div id="reports"><p class="mut">Loading…</p></div>\n'
+                '  <article id="report-view" class="report" hidden></article></div>')
+        h = sub(h, '${IC.star}Review fit + draft CV</button></div>', '${IC.star}Review fit + draft CV</button>${pcJobDocs(j)}</div>')
+        h = sub(h, '</style>', read('pc.css') + '</style>')
         h = h.replace('Claude reads it, scores it against your evidence bank and shows the fit.',
                       'Codex reads it, scores it against your evidence bank and shows the fit.')
         h = h.replace('They stay drafts until a truth review.',

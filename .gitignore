@@ -3,6 +3,7 @@ __pycache__/
 work/
 .env*
 *.docx
+!examples/*.docx
 *.sqlite3
 tools/hq-dashboard/index.html
 tools/hq-dashboard/pc-index.html
