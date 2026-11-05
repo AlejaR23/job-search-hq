@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+work/
+.env*
+*.docx
+*.sqlite3
+tools/hq-dashboard/index.html
+tools/hq-dashboard/pc-index.html
+# your real evidence and rules stay on your PC; only the fictional examples are tracked
+rules.md
+evidence/*
+!evidence/*-example-*.md

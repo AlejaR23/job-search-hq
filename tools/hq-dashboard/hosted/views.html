@@ -1,0 +1,37 @@
+<section id="v-search" hidden><div class="tool-in">
+ <div class="panel"><div class="panel-h"><h2>New job search</h2></div>
+  <p class="lede">Say what the search assistant should look for. It runs at the next daily search (on your computer) and the new leads land on the Board as a new list. </p>
+  <form id="f-search" class="form2" novalidate>
+   <label class="f full"><span>What to look for <span class="req">*</span></span><input class="inp" id="s-what" maxlength="300" placeholder="e.g. AI operations or AI automation roles, entry to mid level"></label>
+   <label class="f">Where<input class="inp" id="s-where" maxlength="120" placeholder="Remote, your country, Spain…"></label>
+   <label class="f">Level<select class="inp" id="s-level"><option value="">Any level</option><option>Entry</option><option>Mid</option><option>Senior</option></select></label>
+   <label class="f full">Anything else<textarea class="inp" id="s-notes" rows="3" maxlength="1000" placeholder="Companies to include or avoid, salary floor, languages…"></textarea></label>
+   <p id="s-err" class="banner full" hidden></p>
+   <div class="full tool-foot"><small id="s-msg"></small><button class="btn" id="s-go" type="submit">Queue search</button></div>
+  </form></div>
+ <div class="panel"><div class="panel-h"><h2>Your searches</h2></div><div id="requests" class="rqs"><p class="mut">Loading…</p></div></div>
+</div></section>
+<section id="v-review" hidden><div class="tool-in">
+ <div class="panel"><div class="panel-h"><h2>Your CVs</h2></div>
+  <p class="lede">Your tailored CVs as Word files. On the iPhone a download lands in Files › Downloads. They're also in your synced CVs folder, refreshed by the scan.</p>
+  <div id="cvs"><p class="mut">Loading…</p></div></div>
+ <div class="panel"><div class="panel-h"><h2>Review a posting</h2></div>
+  <p class="lede">Add a screenshot or photo of a job, or paste its text. Claude reads it, scores it against your evidence bank and shows the fit. Then you choose whether to create a CV and a cover letter. They stay drafts until a truth review.</p>
+  <form id="f-review" class="form2" novalidate>
+   <p id="r-hint" class="banner n full" hidden></p>
+   <div class="full ph" id="r-photos" hidden>
+    <div class="ph-row"><label class="btn ghost" for="r-file" id="r-add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="15" rx="2.5"/><circle cx="9" cy="10.5" r="1.7"/><path d="m21 16-4.5-4.5L7 20"/></svg>Add photos</label><small class="mut" id="r-cap"></small></div>
+    <input class="sr" id="r-file" type="file" multiple aria-label="Add photos of the posting">
+    <ul class="thumbs" id="r-thumbs" hidden></ul>
+   </div>
+   <label class="f full">Posting text<textarea class="inp" id="r-text" rows="8" maxlength="40000" placeholder="Paste the whole posting: responsibilities, requirements, location, terms. Not needed if you added photos."></textarea></label>
+   <label class="f">Company (optional)<input class="inp" id="r-company" maxlength="120"></label>
+   <label class="f">Role (optional)<input class="inp" id="r-role" maxlength="200"></label>
+   <label class="f full">Link to posting (optional)<input class="inp" id="r-link" type="url" maxlength="500" placeholder="https://"></label>
+   <p id="r-err" class="banner full" hidden></p>
+   <div id="r-op" class="full" hidden></div>
+   <div class="full tool-foot"><small id="r-msg"></small><button class="btn" id="r-go" type="submit">Analyze</button></div>
+  </form></div>
+ <div id="result"></div>
+ <div class="panel"><div class="panel-h"><h2>Past reviews</h2></div><div id="postings"><p class="mut">Loading…</p></div></div>
+</div></section>

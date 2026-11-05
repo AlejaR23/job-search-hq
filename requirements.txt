@@ -1,0 +1,5 @@
+openpyxl
+python-docx
+Pillow
+# optional, only for the phone-browser test:
+# playwright
