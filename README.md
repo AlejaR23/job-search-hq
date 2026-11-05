@@ -4,7 +4,7 @@ A private, password-protected job-search desk that runs on your own PC and opens
 It keeps your leads in an ordinary Excel file you already own, and can ask an AI assistant to score a posting
 against **your own evidence** and draft a one-page CV or cover letter. Every draft stays a draft until you check it.
 
-> Built by directing AI agents (Claude and Codex) with a human owner who set the goals, wrote the rules and approved
+> Built by directing AI agents (Claude and Codex) with a human owner who set the goals and approved
 > every change. The code is small on purpose and it ships with offline tests that use only fictional data.
 
 ## What it does
