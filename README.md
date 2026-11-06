@@ -1,5 +1,7 @@
 # Job Search HQ
 
+[![tests](https://github.com/CarlitosRed/job-search-hq/actions/workflows/tests.yml/badge.svg)](https://github.com/CarlitosRed/job-search-hq/actions/workflows/tests.yml) [![release](https://img.shields.io/github/v/release/CarlitosRed/job-search-hq)](https://github.com/CarlitosRed/job-search-hq/releases) [![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 A private, password-protected job-search desk that runs on your own PC and opens on your phone.
 It keeps your leads in an ordinary Excel file you already own, and can ask an AI assistant to score a posting
 against **your own evidence** and draft a one-page CV or cover letter. Every draft stays a draft until you check it.
@@ -71,6 +73,10 @@ python -I tools/hq-dashboard/test_pc_server.py   # needs Playwright for the phon
 ```
 
 The suite never calls a live model and never reads real career data.
+
+## Contributing
+
+Want to improve the look and feel? See [CONTRIBUTING.md](CONTRIBUTING.md): it says which files are safe for design work and which (logic, backend, safety checks) need the owner.
 
 ## License
 

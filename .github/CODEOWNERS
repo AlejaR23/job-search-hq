@@ -1,0 +1,4 @@
+# The owner reviews everything; backend paths are listed so they are never merged by accident.
+* @CarlitosRed
+/tools/hq-dashboard/*.py @CarlitosRed
+/.github/ @CarlitosRed
