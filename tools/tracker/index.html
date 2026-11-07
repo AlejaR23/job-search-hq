@@ -1009,15 +1009,15 @@ const stageColor=s=>s.id==="wish"?"var(--tc-wish, #7c3aed)":s.id==="ready"?"var(
 function nextStep(j){
  const st=stageOf(j);
  if(st.id==="closed"){
-  return{title:j["My status"]==="Rejected"?"Application rejected":"Application skipped",attn:false};
- }
- if(st.id==="other"){
-  return{title:"Review role details",attn:false};
+  return{title:j["My status"]==="Rejected"?"Application rejected":"Role skipped",attn:false};
  }
  const att=attention(j);
  const isAttn=!!att;
  if(j._open==="closed"){
   return{title:"Confirm posting is still open",attn:true};
+ }
+ if(st.id==="other"){
+  return{title:"Review role details",attn:isAttn};
  }
  if(st.id==="wish"){
   return{title:"Compare role fit",attn:isAttn};
@@ -1281,9 +1281,9 @@ document.addEventListener("click",async e=>{const t=e.target;
  if(!t.closest(".bcard-move-wrap")){$$(".bcard-move-menu").forEach(x=>x.hidden=true);$$(".bcard-move-btn").forEach(x=>x.setAttribute("aria-expanded","false"))}
  const a=t.closest("[data-act]");if(a){const v=a.dataset.act;if(v==="clear")clearFilters();if(v==="close"||v==="closef")closeDrawers();if(v==="openf")openFilters();if(v==="add")openAdd();if(v==="attn"){S.attention=!S.attention;render()}if(v==="attn-list"){S.attention=true;S.view="list";render()}
   if(v==="toggle-board-closed"){S.showClosedBoard=!S.showClosedBoard;render()}
-  if(v==="open-move"){const w=a.closest(".bcard-move-wrap"),m=w.querySelector(".bcard-move-menu"),h=m.hidden;$$(".bcard-move-menu").forEach(x=>x.hidden=true);$$(".bcard-move-btn").forEach(x=>x.setAttribute("aria-expanded","false"));m.hidden=!h;a.setAttribute("aria-expanded",String(!h));if(!h){const f=m.querySelector(".bcard-move-item");if(f)f.focus()}return}
+  if(v==="open-move"){const w=a.closest(".bcard-move-wrap"),m=w.querySelector(".bcard-move-menu"),opening=m.hidden;$$(".bcard-move-menu").forEach(x=>x.hidden=true);$$(".bcard-move-btn").forEach(x=>x.setAttribute("aria-expanded","false"));m.hidden=!opening;a.setAttribute("aria-expanded",String(opening));if(opening){const f=m.querySelector(".bcard-move-item");if(f)f.focus()}else a.focus();return}
   return}
- const mv=t.closest("[data-moveto]");if(mv){const j=byKey(mv.dataset.k),st=STAGES.find(x=>x.id===mv.dataset.moveto);if(j&&st&&st.id!=="other"&&stageOf(j)!==st){setStatus(j,dropStatus(j,st)).then(()=>{$(`.card[data-k="${CSS.escape(mv.dataset.k)}"]`)?.focus()})}$$(".bcard-move-menu").forEach(x=>x.hidden=true);$$(".bcard-move-btn").forEach(x=>x.setAttribute("aria-expanded","false"));return}
+ const mv=t.closest("[data-moveto]");if(mv){const k=mv.dataset.k,keyboard=e.detail===0,j=byKey(k),st=STAGES.find(x=>x.id===mv.dataset.moveto);if(j&&st&&st.id!=="other"&&stageOf(j)!==st){setStatus(j,dropStatus(j,st)).then(()=>{const card=$(`.card[data-k="${CSS.escape(k)}"]`);if(card)card.focus();else if(keyboard&&st.id==="closed"&&!S.showClosedBoard&&!PENDING.has(k)&&stageOf(byKey(k)||j).id==="closed")$('[data-act="toggle-board-closed"]')?.focus()})}$$(".bcard-move-menu").forEach(x=>x.hidden=true);$$(".bcard-move-btn").forEach(x=>x.setAttribute("aria-expanded","false"));return}
  const rm=t.closest("[data-rm]");if(rm){const f=rm.dataset.rm;if(Array.isArray(S[f]))S[f]=S[f].filter(x=>x!==rm.dataset.v);else S[f]=f==="minScore"?0:false;render();return}
  const tile=t.closest("[data-tile]");if(tile){const v=tile.dataset.tile;S.view="list";if(v!=="all"){S.stages=[BUCKET_STAGE[v]]}render();return}
  const reg=t.closest("[data-reg]");if(reg){S.regions=[reg.dataset.reg];S.view="list";render();return}
@@ -1321,7 +1321,7 @@ document.addEventListener("keydown",e=>{const t=e.target,typing=/INPUT|TEXTAREA|
  const card=t.closest&&t.closest(".card[data-k]");
  if(card&&t===card&&(e.key==="Enter"||e.key===" ")){e.preventDefault();openJob(card.dataset.k);return}
  if(card&&e.shiftKey&&(e.key==="ArrowRight"||e.key==="ArrowLeft")&&S.view==="board"){e.preventDefault();const j=byKey(card.dataset.k);const i=stageIdx(j)+(e.key==="ArrowRight"?1:-1);
-  if(i<0||i>=STAGES.length-1)return;const k=card.dataset.k;setStatus(j,dropStatus(j,STAGES[i])).then(()=>$(`.card[data-k="${CSS.escape(k)}"]`)?.focus());return}
+  if(i<0||i>=STAGES.length-1)return;const k=card.dataset.k;setStatus(j,dropStatus(j,STAGES[i])).then(()=>{const moved=$(`.card[data-k="${CSS.escape(k)}"]`);if(moved)moved.focus();else if(STAGES[i].id==="closed"&&!S.showClosedBoard&&!PENDING.has(k)&&stageOf(byKey(k)||j).id==="closed")$('[data-act="toggle-board-closed"]')?.focus()});return}
  if(S.view==="list"&&(e.key==="j"||e.key==="k"||e.key==="ArrowDown"||e.key==="ArrowUp")&&(card||t===document.body)){e.preventDefault();const cs=$$(".lcard");const i=cs.findIndex(c=>c.dataset.k===S.sel);
   const n=cs[Math.max(0,Math.min(cs.length-1,i+(/j|ArrowDown/.test(e.key)?1:-1)))];if(n){if(wide())openJob(n.dataset.k);else n.focus();$(`.lcard[data-k="${CSS.escape(n.dataset.k)}"]`)?.scrollIntoView({block:"nearest"})}}});
 /* drag and drop */
