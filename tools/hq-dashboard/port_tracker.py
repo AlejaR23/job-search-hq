@@ -59,8 +59,8 @@ def main():
     h = sub(h, '<script>\n"use strict";', '<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>\n<script>\n"use strict";')
     h = sub(h, " close:'<svg", " dl:'<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 4v11M7 10l5 5 5-5M5 20h14\"/></svg>',\n close:'<svg")
     h = sub(h, 'title="Reload from the spreadsheet" aria-label="Reload from the spreadsheet"', 'title="Reload" aria-label="Reload"')
-    h = sub(h, "<dt><kbd>1</kbd>–<kbd>4</kbd></dt><dd>Overview, Board, List, Contacts</dd>",
-            "<dt><kbd>1</kbd>–<kbd>6</kbd></dt><dd>Overview, Board, List, Contacts, Search, CVs</dd>")
+    h = sub(h, "<dt><kbd>1</kbd>–<kbd>4</kbd></dt><dd>Overview, List, Board, Contacts</dd>",
+            "<dt><kbd>1</kbd>–<kbd>6</kbd></dt><dd>Overview, List, Board, Contacts, Search, CVs</dd>")
     h = sub(h, "<p>Every change saves straight into the spreadsheet and can be undone from the message at the bottom. This page only records; it never applies or sends anything.</p>",
             "<p>Every change saves online at once and reaches the spreadsheet at the next sync. Undo from the message at the bottom. This page only records and drafts; it never applies or sends anything.</p>")
     h = sub(h, "<p class=\"sub\">Adds a new row to the spreadsheet. It's recorded only; applying stays yours.</p>",
@@ -73,7 +73,7 @@ def main():
     h = resub(h, r"/\* ---------- data ---------- \*/.*?(?=/\* ---------- writes ---------- \*/)", lambda _: read("data.js"))
     h = sub(h, 'const key=j=>j._sheet+"|"+j._row;', "const key=j=>j._id;")
     h = sub(h, 'S.q="";S.view="overview";S.attention=false;',
-            'S.q="";S.view="overview";S.attention=false;{const v=location.hash.slice(1);if(["overview","board","list","contacts","search","review"].includes(v))S.view=v}')
+            'S.q="";S.view="overview";S.attention=false;{const v=location.hash.slice(1);if(["overview","list","board","contacts","search","review"].includes(v))S.view=v}')
     h = sub(h, "const p={sheet:j._sheet,row:j._row,status:s,expect:{Company:j.Company,Role:j.Role}};", "const p={id:j._id,sheet:j._sheet,status:s};")
     h = sub(h, 'post("/api/update",{sheet:j._sheet,row:j._row,status:e.status,date:e.date,expect:{Company:j.Company,Role:j.Role}})',
             'post("/api/update",{id:j._id,sheet:j._sheet,status:e.status,date:e.date})')
@@ -93,8 +93,8 @@ def main():
             ' const ac=activeCount();$("#fcount").hidden=!ac;$("#fcount").textContent=ac;$("#fbtn").hidden=S.view==="contacts"||tool;\n'
             ' activebar();if(tool||!READY){save();return}const m=$("#main");')
     h = sub(h, '$("#activebar").innerHTML=ch.length&&S.view!=="contacts"?', '$("#activebar").innerHTML=ch.length&&S.view!=="contacts"&&!TOOL_VIEWS.includes(S.view)?')
-    h = sub(h, 'if(/^[1-4]$/.test(e.key)){S.view=["overview","board","list","contacts"][+e.key-1];',
-            'if(/^[1-6]$/.test(e.key)){S.view=["overview","board","list","contacts","search","review"][+e.key-1];')
+    h = sub(h, 'if(/^[1-4]$/.test(e.key)){S.view=["overview","list","board","contacts"][+e.key-1];',
+            'if(/^[1-6]$/.test(e.key)){S.view=["overview","list","board","contacts","search","review"][+e.key-1];')
     h = sub(h, "<dt>Spreadsheet</dt><dd>${esc(j._sheet)}, row ${j._row}${j[\"#\"]?` (#${esc(j[\"#\"])})`:\"\"}</dd>",
             "<dt>Spreadsheet</dt><dd>${j._added?`${esc(j._sheet)} · added here, goes in at the next sync`:`${esc(j._sheet)}, row ${esc(j._row)}${j[\"#\"]?` (#${esc(j[\"#\"])})`:\"\"}`}</dd>")
     h = sub(h, '<b>This posting looks closed.</b> Last open check: ${esc(j._check)}${j._checkdate?` (${esc(j._checkdate)})`:""}.',
@@ -141,7 +141,7 @@ def main():
     h = sub(h, 'Also in ${j._sib.length} place${j._sib.length>1?"s":""}</span>`:""}</div></div>', 'Also in ${j._sib.length} place${j._sib.length>1?"s":""}</span>`:""}</div>${opts.drag?moveSel(j):""}</div>')
     h = sub(h, '<div class="col-empty">${s.id==="wish"?"No saved jobs":"Drag a card here"}</div>', '<div class="col-empty">${s.id==="wish"?"No saved jobs":`<span class="h-desk">Drag a card here</span><span class="h-touch">Nothing here yet</span>`}</div>')
     h = sub(h, '<p class="hint">Drag cards between', '<p class="hint h-desk">Drag cards between')
-    h = sub(h, 'return`<div class="board" role="list">', 'return`<p class="hint h-touch">Scroll down for more stages. Tap a card for details, or use Move… on it.</p><div class="board" role="list">')
+    h = sub(h, 'return`<div class="board" role="list">', 'return`<p class="hint h-touch">Scroll sideways for more stages. Tap a card for details, or use Move… on it.</p><div class="board" role="list">')
     # Help: phones get phone help, not keyboard shortcuts.
     h = sub(h, '<div id="help" popover><h2>Shortcuts</h2><dl>',
             '<div id="help" popover><h2 class="h-desk">Shortcuts</h2><h2 class="h-touch">Help</h2><p class="h-touch">Tap a job to open it. Change its status there, or with Move… on the Board. Scrolled down? Tap the open tab to go back up.</p><dl class="h-desk">')
@@ -177,7 +177,7 @@ def main():
         h = sub(h, 'esc(c.updated)', 'esc(pcDate(c.updated))')
         # Documents tab (Claude · HQ Builder (Opus), 2026-11-05): CVs, cover letters and reports; a job links its files.
         h = sub(h, '<span class="l">CVs</span></button>\n </nav>', '<span class="l">Documents</span></button>\n </nav>')
-        h = sub(h, '<dd>Overview, Board, List, Contacts, Search, CVs</dd>', '<dd>Overview, Board, List, Contacts, Search, Documents</dd>')
+        h = sub(h, '<dd>Overview, List, Board, Contacts, Search, CVs</dd>', '<dd>Overview, List, Board, Contacts, Search, Documents</dd>')
         h = sub(h, ' <div class="panel"><div class="panel-h"><h2>Your CVs</h2></div>\n'
                    '  <p class="lede">Your tailored CVs as Word files. On the iPhone a download lands in Files › Downloads. They\'re also in your synced CVs folder, refreshed by the scan.</p>\n'
                    '  <div id="cvs"><p class="mut">Loading…</p></div></div>',
