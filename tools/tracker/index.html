@@ -17,7 +17,7 @@
  --av-l:92%;--av-s:70%;--av-fl:30%;
  --r:16px;--r-sm:10px;--on-blue:#fff;
 }
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+@media (prefers-color-scheme:dark){:root{
  --bg:#000;--card:#0a0d14;--ink:#e8edf7;--ink2:#c6cee0;--mute:#a3aec4;--line:#1a2130;--soft:#121826;--hover:#1c2539;
  --blue:#5b84ff;--blue-ink:#a9c1ff;--blue-soft:#1f2d52;
  --green:#45c98a;--green-ink:#98e6be;--green-soft:#15362a;
@@ -61,7 +61,7 @@ a{color:var(--blue-ink)}
 .seg{display:flex;background:transparent;border:0;border-radius:0;padding:0;gap:4px;justify-self:center;margin:0 auto}
 .seg button{border:0;background:transparent;padding:8px 14px;border-radius:9px;color:var(--mute);font-weight:500;display:flex;align-items:center;gap:7px;white-space:nowrap;transition:background .15s,color .15s;position:relative}
 .seg button:hover{color:var(--ink);background:color-mix(in srgb,var(--soft) 50%,transparent)}
-.seg button[aria-selected=true]{background:transparent;color:var(--ink);box-shadow:none;font-weight:600}
+.seg button[aria-selected=true]{background:transparent;color:var(--ink);box-shadow:none}
 .seg button[aria-selected=true]::after{content:"";position:absolute;bottom:0;left:10px;right:10px;height:2px;border-radius:2px;background:var(--blue)}
 .seg svg{width:16px;height:16px}
 .right{display:flex;align-items:center;justify-content:flex-end;gap:8px;min-width:0;justify-self:end}
@@ -407,12 +407,17 @@ kbd{border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;paddi
 .hint kbd{border:1px solid var(--line);border-radius:5px;padding:1px 5px;font:11px inherit;background:var(--card)}
 
 @media (max-width:1240px){.grid-ov{grid-template-columns:1fr}.split{grid-template-columns:minmax(310px,380px) minmax(0,1fr)}.split>.side{display:none}}
-@media (max-width:860px){
+@media (max-width:900px){
  .top-in{padding:10px 16px;gap:10px;display:flex;flex-wrap:wrap}
  .brand{margin-right:auto}
- .right{display:flex;gap:6px}
+ .right{display:contents}
+ .search[hidden]{display:flex!important;visibility:hidden}.actions .btn{align-self:center}
  .seg{order:3;width:100%;justify-content:center}
  .seg button{flex:1;justify-content:center;padding:7px 6px}
+ .search{order:4;flex:1;width:auto;height:auto}
+ .search input{width:100%;height:auto;color:var(--ink);cursor:text;background:var(--card);border-color:var(--line)}
+ .search input::placeholder{color:var(--mute)}
+ .actions{order:5}
  .activebar{padding:0 16px 10px}
  main{padding:14px 16px 50px}
  .split,.split.noside{grid-template-columns:1fr}
@@ -425,12 +430,14 @@ kbd{border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;paddi
  .seg button span.l{font-size:12.5px}
  .seg svg{display:none}
  .actions .btn .l{display:none}
+ .actions{order:1}.search{flex-basis:100%}
  .form2{grid-template-columns:1fr}
  .detail{padding:18px 16px}
  .d-head h2{font-size:18px}
  .stepper button{font-size:10.5px}
  #drawer{--dp:8px}
 }
+@media (hover:none){.search{width:clamp(150px,40vw,260px)}.search input{width:100%;color:var(--ink);cursor:text;background:var(--card);border-color:var(--line)}.search input::placeholder{color:var(--mute)}.search kbd{display:none}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 body{background:transparent}
 html{overflow-y:scroll;scrollbar-gutter:stable}
@@ -605,24 +612,23 @@ function sorter(){return{
 const activeCount=()=>S.sheets.length+S.regions.length+S.verdicts.length+S.stages.length+(S.minScore>0)+S.openOnly+S.hideClosed+S.attention;
 function clearFilters(){Object.assign(S,{sheets:[],regions:[],verdicts:[],stages:[],minScore:0,openOnly:false,hideClosed:false,attention:false});S.q="";$("#q").value="";render()}
 
-/* ---------- data ---------- */
-let busy=false;
+/* ---------- theme (kept outside the data section: the PC build replaces that section) ---------- */
 function toggleTheme(){
- const cur=document.documentElement.dataset.theme==="light"?"light":"dark";
- const next=cur==="light"?"dark":"light";
+ const next=document.documentElement.dataset.theme==="light"?"dark":"light";
  document.documentElement.dataset.theme=next;
- localStorage.setItem("hqTheme",next);
+ try{localStorage.setItem("hqTheme",next)}catch{}
  syncThemeBtn();
 }
 function syncThemeBtn(){
- const isLight=document.documentElement.dataset.theme==="light";
- const b=$("#themeBtn");
- if(b){
-  b.title=isLight?"Switch to dark mode":"Switch to light mode";
-  b.setAttribute("aria-label",b.title);
- }
+ const b=$("#themeBtn");if(!b)return;
+ b.title=document.documentElement.dataset.theme==="light"?"Switch to dark mode":"Switch to light mode";
+ b.setAttribute("aria-label",b.title);
 }
-function boot(){try{localStorage.removeItem("jshq.cache")}catch{}syncThemeBtn();load()}
+syncThemeBtn();
+
+/* ---------- data ---------- */
+let busy=false;
+function boot(){try{localStorage.removeItem("jshq.cache")}catch{}load()}
 async function load(quiet){try{const r=await fetch("/api/data",{cache:"no-store"});const d=await r.json();if(!r.ok)throw new Error(d.error||r.status);
   D=d;D.jobs.forEach(enrich);linkSiblings();if(S.sel&&!byKey(S.sel))S.sel=null;fillAdd();render();syncLabel();
   if(quiet)toast("Spreadsheet changed outside this page. Refreshed.")}
@@ -694,10 +700,10 @@ function jobCard(j,opts={}){const st=stageOf(j);const dim=st.id==="closed"||j._o
 /* Counts for any list of jobs, all from bucket(). pct = each bucket's share to one decimal. */
 function counts(js,quiet){const c={total:js.length,pct:{}};BUCKETS.forEach(([k])=>c[k]=0);js.forEach(j=>c[bucket(j)]++);
  c.cvready=js.filter(j=>String(j["My status"]).trim()==="CV ready").length;c.drafted=c.ready-c.cvready;
- c.appliedTotal=c.applied+c.interview+c.offer+c.rejected+c.skipped;
+ c.appliedTotal=c.applied+c.interview+c.offer+c.rejected;
  c.sent=c.appliedTotal;
  pcts(BUCKETS.map(([k])=>c[k])).forEach((v,i)=>c.pct[BUCKETS[i][0]]=v);
- c.pct.appliedTotal=Math.round((c.pct.applied+c.pct.interview+c.pct.offer+c.pct.rejected+c.pct.skipped)*10)/10;
+ c.pct.appliedTotal=Math.round((c.pct.applied+c.pct.interview+c.pct.offer+c.pct.rejected)*10)/10;
  c.pct.sent=c.pct.appliedTotal;
  const sum=BUCKETS.reduce((a,[k])=>a+c[k],0),psum=BUCKETS.reduce((a,[k])=>a+c.pct[k],0);
  c.problems=[];if(sum!==c.total)c.problems.push(`buckets add up to ${sum}, not ${c.total}`);if(c.total&&Math.abs(psum-100)>pctTol(BUCKETS.map(([k])=>c[k])))c.problems.push(`percentages add up to ${psum.toFixed(1)}, not 100.0`);
@@ -712,12 +718,12 @@ const pctTol=vals=>Math.max(0.1,0.05*vals.filter(v=>v>0).length)+1e-9;
 const f1=v=>`${(+v).toFixed(1)}%`;
 const TILE_COLORS={all:"var(--tc-all)",tracked:"var(--tc-all)",wish:"var(--tc-wish)",ready:"var(--tc-ready)",applied:"var(--tc-applied)",interview:"var(--tc-interview)",offer:"var(--tc-offer)",rejected:"var(--tc-rejected)",skipped:"var(--tc-skipped)",other:"var(--tc-skipped)"};
 function sankey(js,C){const cw=innerWidth<700?Math.max(540,innerWidth-48):0,SH={wish:"Wishlist",ready:"Ready",applied:"Applied",interview:"Interviewing",rejected:"Rejected",offer:"Offer",skipped:"Skipped",other:"Other"};
- const appliedTotal=C.appliedTotal??(C.applied+C.interview+C.offer+C.rejected+C.skipped);
+ const appliedTotal=C.appliedTotal??(C.applied+C.interview+C.offer+C.rejected);
  const N={tracked:["Tracked",C.total,0,TILE_COLORS.tracked],applied:["Applied",appliedTotal,1,TILE_COLORS.applied]};
- BUCKETS.forEach(([k,l])=>{if(k==="applied")return;const col=["interview","offer","rejected","skipped"].includes(k)?2:1;N[k]=[l,C[k],col,TILE_COLORS[k]||"var(--tc-skipped)"]});
+ BUCKETS.forEach(([k,l])=>{if(k==="applied")return;const col=["interview","offer","rejected"].includes(k)?2:1;N[k]=[l,C[k],col,TILE_COLORS[k]||"var(--tc-skipped)"]});
  const PC=Object.assign({},C.pct,{applied:C.pct.appliedTotal??(C.total?Math.round(appliedTotal*1000/C.total)/10:0)});
- const order=["tracked","wish","ready","applied","other","interview","offer","rejected","skipped"];
- const L=[["tracked","wish"],["tracked","ready"],["tracked","applied"],["tracked","other"],["applied","interview"],["applied","offer"],["applied","rejected"],["applied","skipped"]].filter(([a,b])=>N[b]&&N[b][1]>0&&N[a]&&N[a][1]>0);
+ const order=["tracked","wish","ready","applied","skipped","other","interview","offer","rejected"];
+ const L=[["tracked","wish"],["tracked","ready"],["tracked","applied"],["tracked","skipped"],["tracked","other"],["applied","interview"],["applied","offer"],["applied","rejected"]].filter(([a,b])=>N[b]&&N[b][1]>0&&N[a]&&N[a][1]>0);
  const nodes=order.map(k=>[k,N[k]]).filter(([k,v])=>v&&(v[1]>0||k==="tracked"));
  const cols=Math.max(...nodes.map(([,v])=>v[2]))+1;
  const W=cw||1180,H=cw?240:280,top=32,dotR=cw?5:6,pad=cw?18:32,labelW=cols>1?(cw?86:190):0,left=cw?14:32;
@@ -856,7 +862,7 @@ function renderInner(){const js=filtered();$$(".seg button").forEach(b=>b.setAtt
  if($("#sort"))$("#sort").value=S.sort;if($("#group"))$("#group").value=S.group;
  if($("#fdrawer").classList.contains("on"))$("#fdrawer").innerHTML=sidebar(true);
  const dk=$("#drawer").classList.contains("on")&&$("#drawer").dataset.k;if(dk){const j=byKey(dk);if(j)fillDrawer(j);else closeDrawers()}
- save();if(new URLSearchParams(location.search).has("wait"))setTimeout(()=>{},2500)}
+ save()}
 function activebar(){const ch=[];const add=(t,f,v)=>ch.push(`<button class="fchip" data-rm="${f}" data-v="${esc(v)}">${esc(t)}<span aria-hidden="true">×</span><i class="sr">Remove filter</i></button>`);
  S.regions.forEach(r=>add(REG[r][0],"regions",r));S.verdicts.forEach(v=>add(VERD[v][0],"verdicts",v));S.stages.forEach(s=>add(STAGES.find(x=>x.id===s).label,"stages",s));S.sheets.forEach(s=>add(sheetShort(s),"sheets",s));
  if(S.minScore>0)add("Score ≥ "+S.minScore,"minScore","");if(S.openOnly)add("Open postings","openOnly","");if(S.hideClosed)add("Hiding closed","hideClosed","");if(S.attention)add("Needs attention","attention","");
@@ -984,7 +990,7 @@ window.trackerSelfTest=function(){const out=[],fail=m=>out.push("FAIL "+m),pass=
  const mk=(st,w)=>({...D.jobs[0],"My status":st,Where:w,_sheet:"selftest",_row:0,_sib:[],_reg:region(w),_sc:null,_v:verdict(""),_open:"open"});
  const synth=[mk("Offer","Madrid, Spain"),mk("Rejected","Berlin, Germany"),mk("Interview","Home country"),mk("Message drafted","Milan, Italy"),mk("Skipped","Remote, LATAM"),mk("On hold??","Home country"),mk("","Somewhere"),mk("Applied","Home country"),mk("CV ready","Home country"),mk("Suggested (not applied)","Home country")];
  const SC=check("synthetic: one of every status + unknown + blank",synth);
- (SC.offer===1&&SC.rejected===1&&SC.interview===1&&SC.ready===2&&SC.skipped===1&&SC.other===1&&SC.wish===2&&SC.applied===1&&SC.sent===5?pass:fail)("synthetic buckets: "+BUCKETS.map(([k,l])=>`${l} ${SC[k]}`).join(", "));
+ (SC.offer===1&&SC.rejected===1&&SC.interview===1&&SC.ready===2&&SC.skipped===1&&SC.other===1&&SC.wish===2&&SC.applied===1&&SC.sent===4?pass:fail)("synthetic buckets: "+BUCKETS.map(([k,l])=>`${l} ${SC[k]}`).join(", "));
  const ok=!out.some(l=>l.startsWith("FAIL"));console.log((ok?"SELF-TEST PASSED":"SELF-TEST FAILED")+"\n"+out.join("\n"));
  return{ok,total:C.total,buckets:Object.fromEntries(BUCKETS.map(([k])=>[k,C[k]])),pct:C.pct,lines:out}};
 
