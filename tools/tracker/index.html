@@ -100,16 +100,18 @@ a{color:var(--blue-ink)}
 .top .btn.ghost{background:transparent;border-color:transparent;color:var(--mute)}
 .top .btn.ghost:hover{background:color-mix(in srgb,var(--soft) 50%,transparent);color:var(--ink)}
 
-/* top-right search with square 90-deg corners and no shadow */
-.top-search-group{display:flex;align-items:center;gap:12px;margin-left:auto}
-.search{position:relative;display:flex;align-items:center;width:260px;height:38px}
-.search svg{position:absolute;left:11px;top:11px;width:16px;height:16px;color:var(--mute);pointer-events:none;z-index:2;transition:color .15s}
-.search input{width:100%;height:38px;border:1px solid var(--line);background:var(--card);border-radius:0;padding:8px 34px;outline:none;font-size:13px;color:var(--ink);cursor:text;box-shadow:none;transition:border-color .15s}
-.search input::placeholder{color:var(--mute)}
-.search:hover input{border-color:var(--ink2)}
-.search:hover svg,.search:focus-within svg{color:var(--ink)}
-.search input:focus{border-color:var(--blue);outline:1px solid var(--blue)}
-.search kbd{position:absolute;right:9px;top:10px;font:11px/1 inherit;color:var(--mute);border:1px solid var(--line);border-radius:0;padding:2px 5px;pointer-events:none;background:var(--soft);opacity:1}
+/* Expandable search aligned with welcome header: icon-only idle, expands on hover / focus */
+.top-search-group{display:flex;align-items:center;gap:8px;margin-left:auto}
+.search{position:relative;display:flex;align-items:center;justify-content:flex-end;width:38px;height:38px;border:1px solid var(--line);background:var(--card);border-radius:0;box-shadow:none;cursor:pointer;transition:width .26s cubic-bezier(.16,1,.3,1),border-color .15s ease;overflow:hidden}
+.search:hover,.search:focus-within,.search:has(input:not(:placeholder-shown)){width:260px;border-color:var(--blue);cursor:text}
+.search svg{position:absolute;left:10px;top:10px;width:16px;height:16px;color:var(--mute);pointer-events:none;z-index:2;transition:color .15s ease}
+.search:hover svg,.search:focus-within svg{color:var(--blue)}
+.search input{width:100%;height:100%;border:0;background:transparent;border-radius:0;padding:0 34px 0 34px;outline:none;font-size:13px;color:transparent;cursor:pointer;box-shadow:none;transition:color .15s ease}
+.search:hover input,.search:focus-within input,.search:has(input:not(:placeholder-shown)) input{color:var(--ink);cursor:text}
+.search input::placeholder{color:transparent;transition:color .15s ease}
+.search:hover input::placeholder,.search:focus-within input::placeholder,.search:has(input:not(:placeholder-shown)) input::placeholder{color:var(--mute)}
+.search kbd{position:absolute;right:9px;top:9px;font:11px/1 inherit;color:var(--mute);border:1px solid var(--line);border-radius:0;padding:3px 5px;pointer-events:none;background:var(--soft);opacity:0;transition:opacity .15s ease}
+.search:hover kbd,.search:focus-within kbd{opacity:1}
 .search input:focus+kbd,.search input:not(:placeholder-shown)+kbd{display:none}
 
 /* filters button in sidebar */
@@ -158,7 +160,7 @@ main{flex:1 0 auto;width:100%;max-width:100%;margin:0;padding:20px 32px 60px}
 /* App Shell for Sidebar + Main */
 .app-shell{display:flex;min-height:100vh;width:100%}
 .app-sidebar{width:236px;flex-shrink:0;background:var(--bg);border-right:1px solid var(--line);display:flex;flex-direction:column;justify-content:space-between;padding:16px 12px;position:sticky;top:0;height:100vh;z-index:25}
-.app-main-wrap{flex:1;min-width:0;display:flex;flex-direction:column;min-height:100vh;width:calc(100% - 236px)}
+.app-main-wrap{position:relative;flex:1;min-width:0;display:flex;flex-direction:column;min-height:100vh;width:calc(100% - 236px)}
 
 .sidebar-top{display:flex;flex-direction:column;gap:10px}
 .sidebar-brand{display:flex;align-items:center;gap:10px;padding:4px 6px 6px}
@@ -214,8 +216,8 @@ main{flex:1 0 auto;width:100%;max-width:100%;margin:0;padding:20px 32px 60px}
 
 /* Top bar utility strip on desktop */
 @media (min-width:960px){
- .top{background:transparent;border-bottom:none;backdrop-filter:none;position:relative}
- .top-in{padding:14px 32px 0;display:flex;align-items:center;justify-content:flex-end}
+ .top{position:absolute;top:36px;right:32px;z-index:25;background:transparent;border:none;padding:0;backdrop-filter:none}
+ .top-in{padding:0;display:flex;align-items:center;justify-content:flex-end}
  .top-in .mobile-brand{display:none}
  .top-in .mobile-ctrls{display:none}
 }
