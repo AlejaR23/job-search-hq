@@ -8,6 +8,7 @@ let PC_WAITING=false,PC_LAST_WRITE='';
 async function pcHealth(){try{const h=await pcFetch('/api/health');let el=document.getElementById('pc-health');if(!el){el=document.createElement('small');el.id='pc-health';el.style.display='block';$('#sync').after(el)}el.textContent=h.scan?.message||'Scan status unavailable.'}catch{}}
 // Save notices are UI state only.
 let PC_SAVE_STAMP='',PC_SAVE_TIMER,PC_SAVE_FADE,PC_SAVE_ERROR=false,PC_SAVE_POINTER=false;
+let PC_SAVE_SEEN=null;
 function pcSaveHold(box){return PC_SAVE_POINTER||box.contains(document.activeElement)}
 function pcSaveStop(box){clearTimeout(PC_SAVE_TIMER);clearTimeout(PC_SAVE_FADE);box.classList.remove('pc-save-fade')}
 function pcSaveArm(box){
@@ -55,11 +56,14 @@ function pcSaveNotice(stamp,message,error=false,edit=null){
 }
 async function pcWrites(){
  try{const data=await pcFetch('/api/writes'),items=data.writes||[];
- const pending=items.filter(w=>['waiting','applying'].includes(w.status));
- const errors=items.filter(w=>['conflict','needs_check','failed'].includes(w.status));
+ // Finished edits from before this page opened must never announce in this session.
+ if(PC_SAVE_SEEN===null)PC_SAVE_SEEN=new Set(items.filter(w=>['saved','cancelled'].includes(w.status)).map(w=>w.id));
+ const notices=items.filter(w=>!PC_SAVE_SEEN.has(w.id));
+ const pending=notices.filter(w=>['waiting','applying'].includes(w.status));
+ const errors=notices.filter(w=>['conflict','needs_check','failed'].includes(w.status));
  // Preserve the queue's existing edit-blocking policy, including across connection loss.
  PC_WAITING=items.some(w=>['waiting','applying','conflict','needs_check'].includes(w.status));
- const w=errors[0]||pending[0]||items[0];
+ const w=errors[0]||pending[0]||notices[0];
  const relevant=errors.length||pending.length?[...errors,...pending]:w?[w]:[];
  const stamp=JSON.stringify(relevant.map(w=>[w.id,w.status,w.label,w.message]));
  const summary=[];
@@ -96,7 +100,7 @@ async function boot(){
  await pcHealth();
  await pcInit();
  const b=document.createElement('button');b.className='btn ghost';b.textContent='Sign out';
- b.onclick=async()=>{await pcFetch('/api/logout',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});location.assign('/login')};
+ b.onclick=async()=>{const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),3000);try{await pcFetch('/api/logout',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}',signal:controller.signal})}catch{}finally{clearTimeout(timer);location.assign('/login')}};
  $('#sync').parentNode.append(b);
  setInterval(async()=>{if(busy||document.hidden)return;await pcWrites();await pcHealth();try{const d=await pcFetch('/api/version');if(d.version!==D.version)await reloadJobs(true)}catch{}},5000);
 }
