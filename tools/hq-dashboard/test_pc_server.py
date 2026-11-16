@@ -720,15 +720,52 @@ try {
         openssl = Path('C:/Program Files/Git/usr/bin/openssl.exe')
         subprocess.run([str(openssl),'req','-x509','-newkey','rsa:2048','-nodes','-keyout',str(key),'-out',str(cert),'-days','1','-subj','/CN=localhost'],
                        check=True,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
-        self.server = hq.BoundedHTTPServer(('127.0.0.1',0),hq.handler(self.app))
+        # B6: bound TLS handshakes in worker threads so idle preconnects cannot stall accept().
+        class TLSServer(hq.BoundedHTTPServer):
+            def finish_request(self, request, client_address):
+                request.settimeout(10)
+                request.do_handshake()
+                super().finish_request(request, client_address)
+
+            def handle_error(self, request, client_address):
+                if isinstance(sys.exc_info()[1], (ssl.SSLError, TimeoutError, ConnectionError, OSError)):
+                    return
+                super().handle_error(request, client_address)
+
+        self.server = TLSServer(('127.0.0.1',0),hq.handler(self.app))
         tls = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
         tls.load_cert_chain(cert,key)
-        self.server.socket = tls.wrap_socket(self.server.socket,server_side=True)
+        self.server.socket = tls.wrap_socket(self.server.socket,server_side=True,do_handshake_on_connect=False)
         self.port = self.server.server_port
         self.app.origin = f'https://127.0.0.1:{self.port}'
         self.app.host = f'127.0.0.1:{self.port}'
         self.thread = threading.Thread(target=self.server.serve_forever,daemon=True)
         self.thread.start()
+
+    def test_tls_server_survives_idle_connection(self):
+        # B6: a browser may open a connection and send nothing (a preconnect). The test HTTPS server must keep
+        # answering other requests meanwhile; before the fix the TLS handshake ran on the one accept thread.
+        import socket, http.client
+        self.serve_tls()
+        idle = socket.create_connection(('127.0.0.1', self.port))
+        try:
+            time.sleep(0.3)
+            result = {}
+            def fetch():
+                try:
+                    conn = http.client.HTTPSConnection('127.0.0.1', self.port, timeout=5,
+                                                       context=ssl._create_unverified_context())
+                    conn.request('GET', '/login', headers={'Host': self.app.host})
+                    result['status'] = conn.getresponse().status
+                    conn.close()
+                except Exception as error:
+                    result['error'] = repr(error)
+            worker = threading.Thread(target=fetch, daemon=True)
+            worker.start()
+            worker.join(8)
+            self.assertEqual(result.get('status'), 200, 'Sign-in page did not load while another connection was idle: '+str(result))
+        finally:
+            idle.close()
 
     def browser_login(self, page):
         page.goto(self.app.origin)
@@ -986,18 +1023,46 @@ try {
             self.assertEqual(letter_task['status'], 'queued')
             self.app.ai.process_one()
             expect(page.locator('#result')).to_contain_text('Dear Example Company team', timeout=10000)
-            with page.expect_download() as download:
-                page.locator('#result [data-pc-doc="cl"]').click()
+            # B6: the export reloads the document list, which moves the footer (and Sign out) on a phone; wait for it.
+            with page.expect_response(lambda r: r.url.endswith('/api/docs') and r.request.method == 'GET') as docs_reloaded:
+                with page.expect_download() as download:
+                    page.locator('#result [data-pc-doc="cl"]').click()
+            self.assertTrue(docs_reloaded.value.ok)
             letter = docx.Document(download.value.path())
             self.assertEqual({x.style.name for x in letter.paragraphs}, {'Normal'})
             self.assertNotIn('Sentiment', '\n'.join(x.text for x in letter.paragraphs))
             self.assertNotIn('DRAFT', download.value.suggested_filename)
             self.assertEqual(errors, [])
-            page.get_by_role('button', name='Sign out', exact=True).click()
+            # B6 diagnostics: on failure, report every request, response, navigation and console line after the click.
+            trail, started = [], time.monotonic()
+            def note(kind, text):
+                trail.append(f'{time.monotonic()-started:6.2f}s {kind} {text}')
+            page.on('request', lambda r: note('request', r.method + ' ' + r.url))
+            page.on('response', lambda r: note('response', str(r.status) + ' ' + r.url))
+            page.on('requestfailed', lambda r: note('failed', r.url + ' ' + str(r.failure)))
+            page.on('framenavigated', lambda f: note('navigated', f.url) if f == page.main_frame else None)
+            page.on('console', lambda m: note('console', m.type + ' ' + m.text[:200]))
+            page.on('pageerror', lambda e: note('pageerror', str(e)[:200]))
+            sign_out = page.get_by_role('button', name='Sign out', exact=True)
+            sign_out.scroll_into_view_if_needed()
+            boxes = []
+            for _ in range(50):  # the list redraw lands just after its response; tap once the button holds still
+                boxes.append(sign_out.bounding_box())
+                if len(boxes) > 2 and boxes[-1] == boxes[-2] == boxes[-3]:
+                    break
+                page.wait_for_timeout(100)
+            sign_out.click()
+            note('clicked', 'Sign out')
             try:
                 page.wait_for_selector('#password', timeout=15000)
             except Exception:
-                self.fail('Sign out did not reach the sign-in page: ' + page.url + ' ' + page.locator('body').inner_text()[:300])
+                workers = self.server._workers._value
+                try:
+                    state = page.evaluate('() => [document.readyState, location.href, document.title, document.body ? document.body.innerHTML.length : -1]')
+                except Exception as error:
+                    state = repr(error)
+                self.fail('Sign out did not reach the sign-in page: ' + page.url + ' ' + page.locator('body').inner_text()[:300]
+                          + f'\nfree server workers: {workers}; threads: {threading.active_count()}; page: {state}\n' + '\n'.join(trail[-60:]))
             browser.close()
 
     # Step 01b: interview rounds
