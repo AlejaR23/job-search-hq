@@ -92,7 +92,7 @@ a{color:var(--blue-ink)}
 .logo{width:36px;height:36px;border-radius:10px;background:var(--blue);color:var(--on-blue);display:grid;place-items:center;flex:none}
 .brand h1{font-family:var(--font-display);font-size:18px;margin:0;letter-spacing:-.02em;line-height:1.2;font-weight:700;white-space:nowrap}
 .seg{display:flex;background:transparent;border:0;border-radius:0;padding:0;gap:4px;justify-self:center;margin:0 auto}
-.seg button{border:0;background:transparent;padding:8px 14px;border-radius:9px;color:var(--mute);font-weight:500;display:flex;align-items:center;gap:7px;white-space:nowrap;transition:background .15s,color .15s;position:relative}
+.seg button{box-sizing:border-box;height:36px;border:0;background:transparent;padding:7px 14px;border-radius:9px;color:var(--mute);font-weight:500;display:flex;align-items:center;gap:7px;white-space:nowrap;transition:background .15s,color .15s;position:relative}
 .seg button:hover{color:var(--ink);background:color-mix(in srgb,var(--soft) 50%,transparent)}
 .seg button[aria-selected=true]{background:transparent;color:var(--ink);box-shadow:none}
 .seg button[aria-selected=true]::after{content:"";position:absolute;bottom:0;left:10px;right:10px;height:2px;border-radius:2px;background:var(--blue)}
@@ -101,10 +101,9 @@ a{color:var(--blue-ink)}
 .actions{display:flex;align-items:center;gap:8px}
 
 /* theme toggle button */
-/* theme toggle button */
-#themeBtn{position:relative;width:100%;height:38px;padding:0 12px;display:flex;align-items:center;justify-content:flex-start;gap:10px;background:transparent;border:0;color:var(--mute);border-radius:0;cursor:pointer;transition:background .15s,color .15s;font-size:13.5px;font-weight:500;white-space:nowrap}
+#themeBtn{position:relative;width:36px;height:36px;min-width:36px;padding:0;display:inline-flex;align-items:center;justify-content:center;background:transparent;border:0;color:var(--mute);border-radius:var(--r-sm,10px);cursor:pointer;transition:background .15s,color .15s}
 #themeBtn:hover{background:var(--soft);color:var(--ink)}
-#themeBtn svg{width:17px;height:17px;flex-shrink:0}
+#themeBtn svg{width:18px;height:18px;flex-shrink:0}
 :root:not([data-theme="light"]) #themeBtn .moon{display:none}
 :root:not([data-theme="light"]) #themeBtn .sun{display:block}
 :root[data-theme="light"] #themeBtn .sun{display:none}
@@ -116,11 +115,11 @@ a{color:var(--blue-ink)}
 
 /* Expandable search aligned with welcome header: icon-only idle, expands on hover / focus */
 .top-search-group{display:flex;align-items:center;gap:8px;margin-left:auto}
-.search{position:relative;display:flex;align-items:center;justify-content:flex-end;width:38px;height:38px;border:1px solid var(--line);background:var(--card);border-radius:var(--r-sm,8px);box-shadow:none;cursor:pointer;transition:width .26s cubic-bezier(.16,1,.3,1),border-color .15s ease;overflow:hidden}
+.search{box-sizing:border-box;position:relative;display:flex;align-items:center;justify-content:flex-end;width:36px;height:36px;border:1px solid var(--line);background:var(--card);border-radius:var(--r-sm,8px);box-shadow:none;cursor:pointer;transition:width .26s cubic-bezier(.16,1,.3,1),border-color .15s ease;overflow:hidden}
 .search:hover,.search:focus-within,.search:has(input:not(:placeholder-shown)){width:260px;border-color:var(--blue);cursor:text}
 .search svg{position:absolute;left:10px;top:10px;width:16px;height:16px;color:var(--mute);pointer-events:none;z-index:2;transition:color .15s ease}
 .search:hover svg,.search:focus-within svg{color:var(--blue)}
-.search input{width:100%;height:100%;border:0;background:transparent;border-radius:var(--r-sm,8px);padding:0 34px 0 34px;outline:none;font-size:13px;color:transparent;cursor:pointer;box-shadow:none;transition:color .15s ease}
+.search input{width:100%;height:34px;border:0;background:transparent;border-radius:var(--r-sm,8px);padding:0 34px 0 34px;outline:none;font-size:13px;color:transparent;cursor:pointer;box-shadow:none;transition:color .15s ease}
 .search:hover input,.search:focus-within input,.search:has(input:not(:placeholder-shown)) input{color:var(--ink);cursor:text}
 .search input::placeholder{color:transparent;transition:color .15s ease}
 .search:hover input::placeholder,.search:focus-within input::placeholder,.search:has(input:not(:placeholder-shown)) input::placeholder{color:var(--mute)}
@@ -128,10 +127,10 @@ a{color:var(--blue-ink)}
 .search:hover kbd,.search:focus-within kbd{opacity:1}
 .search input:focus+kbd,.search input:not(:placeholder-shown)+kbd{display:none}
 
-/* filters button in sidebar */
-#fbtn{position:relative;width:100%;height:38px;padding:0 12px;display:flex;align-items:center;justify-content:flex-start;gap:10px;background:transparent;border:0;color:var(--mute);border-radius:var(--r-sm,10px);cursor:pointer;transition:background .15s,color .15s;font-size:13.5px;font-weight:500;text-align:left;white-space:nowrap}
+/* filters button */
+#fbtn{position:relative;height:36px;padding:0 12px;display:inline-flex;align-items:center;gap:7px;background:transparent;border:0;color:var(--mute);border-radius:var(--r-sm,10px);cursor:pointer;transition:background .15s,color .15s;font-size:13.5px;font-weight:500;white-space:nowrap}
 #fbtn:hover{background:var(--soft);color:var(--ink)}
-#fbtn svg{width:17px;height:17px;flex-shrink:0}
+#fbtn svg{width:16px;height:16px;flex-shrink:0}
 #fbtn .count{margin-left:auto;min-width:18px;height:18px;padding:0 6px;font-size:11px;font-weight:700;line-height:18px;border-radius:999px;background:var(--blue);color:var(--on-blue);text-align:center}
 
 /* page footer */
@@ -170,108 +169,17 @@ main{flex:1 0 auto;width:100%;max-width:100%;margin:0;padding:20px 32px 60px}
 .panel-h{display:flex;align-items:center;gap:10px;margin-bottom:12px}
 .panel-h p{margin:0;color:var(--mute);font-size:12.5px}
 .panel-h .sp{margin-left:auto}
-/* App Shell for Sidebar + Main */
-/* App Shell for Sidebar + Main */
-.app-shell{display:flex;min-height:100vh;width:100%}
-.app-sidebar{width:236px;flex-shrink:0;background:var(--sidebar-bg,#f6f4ee);border-right:1px solid var(--line);display:flex;flex-direction:column;justify-content:space-between;padding:16px 12px;position:sticky;top:0;height:100vh;z-index:25}
-.app-main-wrap{position:relative;flex:1;min-width:0;display:flex;flex-direction:column;min-height:100vh;width:calc(100% - 236px)}
-
-.sidebar-top{display:flex;flex-direction:column;gap:10px}
-.sidebar-brand{display:flex;align-items:center;gap:10px;padding:4px 6px 6px}
-.sidebar-brand-name{font-family:var(--font-display);font-size:15px;font-weight:700;letter-spacing:-.02em;color:var(--ink);white-space:nowrap}
-.sidebar-logo{width:32px;height:32px;border-radius:10px;background:var(--blue);color:#fff;display:grid;place-items:center;flex-shrink:0}
-
-/* Sidebar Search */
-.sidebar-search-wrap{width:100%;margin:2px 0 4px}
-.sidebar-search-wrap .search{width:100%!important;position:relative;display:flex;align-items:center;height:36px}
-.sidebar-search-wrap .search svg{position:absolute;left:10px;top:10px;width:15px;height:15px;color:var(--mute);pointer-events:none;z-index:2}
-.sidebar-search-wrap .search input{width:100%!important;height:36px;border:1px solid var(--line);background:var(--card);border-radius:9px;padding:7px 32px 7px 32px;outline:none;font-size:12.5px;color:var(--ink);cursor:text;transition:border-color .15s,box-shadow .15s}
-.sidebar-search-wrap .search input::placeholder{color:var(--mute)}
-.sidebar-search-wrap .search input:focus{border-color:var(--blue);box-shadow:0 0 0 2px var(--blue-soft)}
-.sidebar-search-wrap .search kbd{position:absolute;right:8px;top:9px;font:11px/1 inherit;color:var(--mute);border:1px solid var(--line);border-radius:4px;padding:2px 5px;pointer-events:none;background:var(--soft);opacity:1}
-.sidebar-search-wrap .search input:focus+kbd,.sidebar-search-wrap .search input:not(:placeholder-shown)+kbd{display:none}
-
-/* Sidebar Navigation Items */
-.app-sidebar .seg{display:flex;flex-direction:column;gap:3px;width:100%;margin:0;padding:0}
-.app-sidebar .seg button{width:100%;justify-content:flex-start;padding:8px 12px;border-radius:var(--r-sm,10px);font-size:13.5px;color:var(--mute);transition:background .15s,color .15s}
-.app-sidebar .seg button:hover{color:var(--ink);background:var(--soft)}
-.app-sidebar .seg button[aria-selected=true]{color:#ffffff;background:#111827;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,0.12)}
-:root:not([data-theme="light"]) .app-sidebar .seg button[aria-selected=true]{color:#ffffff;background:#1e2027;font-weight:600;box-shadow:inset 0 1px 0 rgba(255,255,255,0.08)}
-.app-sidebar .seg button[aria-selected=true]::after{display:none}
-.app-sidebar .seg svg{width:17px;height:17px;flex-shrink:0}
-
-/* Sidebar Filters Button */
-.sidebar-item-btn{width:100%;display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;border:0;background:transparent;color:var(--mute);font-size:13.5px;font-weight:500;cursor:pointer;transition:background .15s,color .15s;text-align:left}
-.sidebar-item-btn:hover{color:var(--ink);background:var(--soft)}
-.sidebar-item-btn svg{width:17px;height:17px;flex-shrink:0}
-.sidebar-item-btn .count{background:var(--blue);color:var(--on-blue);border-radius:999px;font-size:10.5px;font-weight:700;padding:0 6px;line-height:16px;margin-left:auto}
-
-/* Sidebar Add Lead Button */
-.sidebar-add-btn{width:100%;height:38px;padding:0 14px;background:var(--card);border:1px solid var(--line);border-radius:var(--r-sm,10px);color:var(--ink);font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:7px;cursor:pointer;box-shadow:none;transition:background .15s,border-color .15s;margin-top:6px}
-.sidebar-add-btn svg{width:15px;height:15px;flex:none}
-.sidebar-add-btn:hover{background:var(--hover);border-color:var(--ink2)}
-
-/* Sidebar Bottom (Theme Toggle + User Profile) */
-.sidebar-bottom{padding-top:10px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:6px}
-.sidebar-theme-btn{width:100%;height:36px;display:flex;align-items:center;gap:9px;padding:0 10px;border-radius:var(--r-sm,10px);background:transparent;border:0;color:var(--mute);font-size:13px;font-weight:500;cursor:pointer;transition:background .15s,color .15s}
-.sidebar-theme-btn:hover{color:var(--ink);background:var(--soft)}
-.sidebar-theme-icon{width:18px;height:18px;display:grid;place-items:center;flex:none}
-.sidebar-theme-icon svg{width:16px;height:16px}
-:root:not([data-theme="light"]) .theme-text-light{display:inline}
-:root:not([data-theme="light"]) .theme-text-dark{display:none}
-:root[data-theme="light"] .theme-text-light{display:none}
-:root[data-theme="light"] .theme-text-dark{display:inline}
-
-.user-capsule{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:10px;background:color-mix(in srgb,var(--soft) 50%,transparent);border:1px solid var(--line);cursor:default;user-select:none}
-.user-av{width:28px;height:28px;border-radius:7px;background:color-mix(in srgb,#7c3aed 18%,var(--soft));color:#7c3aed;font-size:11px;font-weight:700;display:grid;place-items:center;flex-shrink:0}
+.user-capsule{box-sizing:border-box;height:36px;display:inline-flex;align-items:center;gap:8px;padding:4px 8px;border-radius:10px;background:color-mix(in srgb,var(--soft) 50%,transparent);border:1px solid var(--line);cursor:default;user-select:none}
+.user-av{width:26px;height:26px;border-radius:7px;background:color-mix(in srgb,#7c3aed 18%,var(--soft));color:#7c3aed;font-size:11px;font-weight:700;display:grid;place-items:center;flex-shrink:0}
 :root:not([data-theme="light"]) .user-av{background:rgba(167,139,250,.18);color:#a78bfa}
-.user-info{flex:1;min-width:0;display:flex;flex-direction:column}
-.user-name{font-size:12px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.user-chev{color:var(--mute);font-size:11px;margin-left:auto}
-
-/* Top bar utility strip on desktop */
-@media (min-width:960px){
- .top{position:absolute;top:36px;right:32px;z-index:25;background:transparent;border:none;padding:0;backdrop-filter:none;pointer-events:none}
- .top .search,.top button{pointer-events:auto}
- .top-in{padding:0;display:flex;align-items:center;justify-content:flex-end}
- .top-in .mobile-brand{display:none}
- .top-in .mobile-ctrls{display:none}
- .top:not(:has(#appSearch)):not(:has(#undoBtn:not([hidden]))){display:none}
-}
-.search-slot-inline{display:inline-flex;align-items:center;min-width:0;position:relative}
-.search-slot-inline .search{height:34px;width:34px;border-radius:var(--r-sm);background:var(--card);border:1px solid var(--line);box-shadow:none;transition:width .26s cubic-bezier(.16,1,.3,1),border-color .15s ease,box-shadow .15s ease}
-.search-slot-inline .search svg{left:8px;top:8px;width:16px;height:16px}
-.search-slot-inline .search kbd{top:7px;right:7px}
-.search-slot-inline .search:hover,.search-slot-inline .search:focus-within,.search-slot-inline .search:has(input:not(:placeholder-shown)){width:clamp(180px,20vw,240px);border-color:var(--blue);box-shadow:0 0 0 2px var(--blue-soft)}
-
-@media (max-width:959px){
- .app-shell{flex-direction:column}
- .app-sidebar{width:100%;max-width:100vw;height:auto;position:sticky;top:0;z-index:30;border-right:none;border-bottom:1px solid var(--line);padding:10px 14px 8px;display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;box-sizing:border-box;overflow-x:hidden;align-items:center;gap:8px;background:color-mix(in srgb,var(--sidebar-bg,#f6f4ee) 92%,transparent);backdrop-filter:blur(10px)}
- .sidebar-top{display:contents}
- .sidebar-bottom{display:contents}
- .sidebar-brand{grid-column:1;grid-row:1;padding:0;display:flex;align-items:center;gap:8px;min-width:0}
- .sidebar-brand-name{font-size:14px;font-weight:700}
- #fbtn{grid-column:2;grid-row:1;width:36px;height:36px;min-width:36px;padding:0;display:inline-flex;align-items:center;justify-content:center;border-radius:var(--r-sm,10px)}
- #fbtn .l{display:none}
- #fbtn .count{position:absolute;top:-2px;right:-2px;min-width:16px;height:16px;line-height:16px;font-size:10px;margin-left:0;border-radius:999px}
- #addbtn{grid-column:3;grid-row:1;width:36px;height:36px;min-width:36px;padding:0;display:inline-flex;align-items:center;justify-content:center;margin-top:0;border-radius:var(--r-sm,10px)}
- #addbtn span{display:none}
- #themeBtn{grid-column:4;grid-row:1;width:36px;height:36px;min-width:36px;padding:0;display:inline-flex;align-items:center;justify-content:center;border-radius:var(--r-sm,10px)}
- #themeBtn .theme-text{display:none}
- .app-sidebar .seg{grid-column:1/-1;grid-row:2;width:100%;min-width:0;display:flex;flex-direction:row;gap:4px;overflow-x:auto;padding-bottom:2px;-webkit-overflow-scrolling:touch}
- .app-sidebar .seg button{padding:7px 10px;font-size:12px;width:auto;white-space:nowrap;flex-shrink:0;border-radius:var(--r-sm,10px)}
- #shortcutsBtn,#refresh,.user-capsule{display:none}
- .top{background:var(--bg);border-bottom:1px solid var(--line);padding:0}
- .top-in{padding:8px 14px;display:flex;align-items:center;justify-content:stretch}
- .top-search-group{width:100%;display:flex;align-items:center;gap:8px;margin-left:0}
- .top-search-group .search{width:100%!important}
- .app-main-wrap{width:100%;min-width:0}
- main{padding:14px 16px 40px}
-}
+.user-info{display:flex;flex-direction:column}
+.user-name{font-size:12px;font-weight:600;color:var(--ink);white-space:nowrap}
+.user-chev{color:var(--mute);font-size:11px}
+@media (max-width:900px){.user-capsule{display:none}}
 
 .ov-wrap{display:flex;flex-direction:column;gap:calc(18px * 0.97);width:100%}
 @media (min-width:960px){
- .app-main-wrap:has(.ov-wrap) > .top{display:none}
+ 
 }
 .ov-header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:8px}
 .ov-title-wrap{display:flex;flex-direction:column;gap:2px}
@@ -1026,43 +934,24 @@ html{overflow-y:scroll;scrollbar-gutter:stable}
 }
 
 </style></head><body><script>try{const p=new URLSearchParams(location.search);const t=p.get("theme")||localStorage.getItem("hqTheme");if(t==="light"||t==="dark"){document.documentElement.dataset.theme=t;localStorage.setItem("hqTheme",t)}if(p.has("noanim"))document.documentElement.classList.add("no-anim")}catch(e){}</script>
-<div class="app-shell">
- <aside class="app-sidebar" aria-label="Sidebar navigation">
-  <div class="sidebar-top">
-   <div class="sidebar-brand">
-    <span class="sidebar-logo" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2.5"/><path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7M3 12.5h18"/></svg></span>
-    <span class="sidebar-brand-name">Job Search HQ</span>
-   </div>
-   <nav class="seg" role="tablist" aria-label="Views">
-    <button role="tab" data-v="overview" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 19V10M10 19V5M16 19v-6M22 19H2"/></svg><span class="l">Overview</span></button>
-    <button role="tab" data-v="list" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M10 4v16M13.5 9H18M13.5 13H18"/></svg><span class="l">List</span></button>
-    <button role="tab" data-v="board" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="5" height="16" rx="1.5"/><rect x="10" y="4" width="5" height="10" rx="1.5"/><rect x="17" y="4" width="4" height="13" rx="1.5"/></svg><span class="l">Board</span></button>
-    <button role="tab" data-v="contacts" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5a6 6 0 0 1 3.5 5.5"/></svg><span class="l">Contacts</span></button>
+<header class="top"><div class="top-in">
+ <div class="brand"><div class="logo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 13h18"/></svg></div>
+  <h1>Job Search HQ</h1></div>
+ <nav class="seg" role="tablist" aria-label="Views">
+  <button role="tab" data-v="overview" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 19V10M10 19V5M16 19v-6M22 19H2"/></svg><span class="l">Overview</span></button>
+  <button role="tab" data-v="list" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M10 4v16M13.5 9H18M13.5 13H18"/></svg><span class="l">List</span></button>
+  <button role="tab" data-v="board" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="5" height="16" rx="1.5"/><rect x="10" y="4" width="5" height="10" rx="1.5"/><rect x="17" y="4" width="4" height="13" rx="1.5"/></svg><span class="l">Board</span></button>
+  <button role="tab" data-v="contacts" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5a6 6 0 0 1 3.5 5.5"/></svg><span class="l">Contacts</span></button>
  </nav>
-   <button class="sidebar-item-btn" id="fbtn" aria-controls="fdrawer" title="Filters" aria-label="Filters"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 5h18l-7 8.5V19l-4 2v-7.5z"/></svg><span class="l">Filters</span><span class="count" id="fcount" hidden></span></button>
-   <button class="sidebar-add-btn" id="addbtn" data-act="add" title="Add a lead"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg><span>+ Add lead</span></button>
-  </div>
-  <div class="sidebar-bottom">
-   <button class="sidebar-theme-btn" id="shortcutsBtn" popovertarget="help" title="Keyboard shortcuts" aria-label="Keyboard shortcuts">
-    <span class="sidebar-theme-icon">
-     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-    </span>
-    <span>Keyboard shortcuts</span>
-   </button>
-   <button class="sidebar-theme-btn" id="refresh" title="Reload from the spreadsheet" aria-label="Reload from the spreadsheet">
-    <span class="sidebar-theme-icon">
-     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg>
-    </span>
-    <span>Reload</span>
-   </button>
-   <button class="sidebar-theme-btn" id="themeBtn" title="Switch theme" aria-label="Switch theme">
-    <span class="sidebar-theme-icon">
-     <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
-     <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/></svg>
-    </span>
-    <span class="theme-text theme-text-light">Light mode</span>
-    <span class="theme-text theme-text-dark">Dark mode</span>
-   </button>
+ <div class="right">
+  <label class="search" id="appSearch" title="Search (press / to focus)"><span class="sr">Search company or role</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" type="search" placeholder="Search jobs…" autocomplete="off"><kbd>/</kbd></label>
+  <div class="actions">
+   <button class="btn icon ghost" id="shortcutsBtn" popovertarget="help" title="Keyboard shortcuts" aria-label="Keyboard shortcuts"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></button>
+   <button class="btn icon ghost" id="refresh" title="Reload from the spreadsheet" aria-label="Reload from the spreadsheet"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg></button>
+   <button class="btn icon ghost" id="themeBtn" title="Switch theme" aria-label="Switch theme"><svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg><svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/></svg></button>
+   <button class="btn ghost" id="fbtn" aria-controls="fdrawer" title="Filters" aria-label="Filters"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 5h18l-7 8.5V19l-4 2v-7.5z"/></svg><span class="l">Filters</span><span class="count" id="fcount" hidden></span></button>
+   <button class="btn ghost" id="undoBtn" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg><span class="l">Undo</span><span class="count" id="undoCount">0</span></button>
+   <button class="btn" id="addbtn" data-act="add" title="Add a lead"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg><span class="l">Add lead</span></button>
    <!-- DESIGN PROPOSAL / SUGGESTION FOR OWNER:
         Profile indicator / switcher pill. Shows active local profile and avatar initials.
         Ready to be connected to local profile management backend. -->
@@ -1074,17 +963,9 @@ html{overflow-y:scroll;scrollbar-gutter:stable}
     <span class="user-chev">▾</span>
    </div>
   </div>
- </aside>
- <div class="app-main-wrap">
-  <header class="top"><div class="top-in">
-   <div class="top-search-group" id="topSearchGroup">
-    <label class="search" id="appSearch" title="Search (press / to focus)"><span class="sr">Search company or role</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" type="search" placeholder="Search jobs…" autocomplete="off"><kbd>/</kbd></label>
-    <div class="actions">
-     <button class="btn ghost" id="undoBtn" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg><span class="l">Undo</span><span class="count" id="undoCount">0</span></button>
-    </div>
-   </div>
-  </div><div class="activebar" id="activebar"></div></header>
-  <main id="main"><div class="loading"><div class="sk-line"></div><div class="sk-line" style="height:280px"></div></div></main>
+ </div>
+</div><div class="activebar" id="activebar"></div></header>
+<main id="main"><div class="loading"><div class="sk-line"></div><div class="sk-line" style="height:280px"></div></div></main>
 <footer class="app-footer">
  <div class="footer-in">
   <div class="footer-status"><i class="footer-dot" aria-hidden="true"></i><small id="sync">Loading…</small></div>
@@ -1146,22 +1027,7 @@ const IC={
  close:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>'};
 
 /* ---------- model ---------- */
-const STAGE_DATA=/*{{STAGES_JSON}}*/null || {
-  "stages": [
-    {"id": "tracked", "name": "Tracked", "means": "Found, not looked at yet", "color": "gray"},
-    {"id": "review", "name": "Review", "means": "Looking at it; Fit shows here", "color": "gray"},
-    {"id": "apply", "name": "Apply", "means": "I want to apply; make the CV", "color": "gray"},
-    {"id": "skipped", "name": "Skipped", "means": "Not applying", "color": "gray"},
-    {"id": "applied", "name": "Applied", "means": "Sent", "color": "gray"},
-    {"id": "interview", "name": "Interview", "means": "In interviews", "color": "gray"},
-    {"id": "offer", "name": "Offer", "means": "Got an offer", "color": "green"},
-    {"id": "rejected", "name": "Rejected", "means": "They said no", "color": "red"}
-  ],
-  "new_row": "Tracked",
-  "rejected_from": ["Applied", "Interview", "Offer"],
-  "legacy": {"Suggested (not applied)": "Review", "Message drafted": "Apply", "CV ready": "Apply"},
-  "without_fit": {"Review": "Tracked"}
-};
+const STAGE_DATA=/*{{STAGES_JSON}}*/null;
 const STAGES=[...STAGE_DATA.stages.map(s=>({...s,label:s.name,step:s.name,sts:[s.name],drop:s.name,c:s.color==="gray"?"var(--mute)":`var(--${s.color})`})),
  {id:"other",label:"Other status",step:"Other",sts:[],drop:null,c:"var(--mute)"}];
 /* THE counting rule. Every number on the page comes from bucket(): each job is in exactly one bucket, by its current status. */
@@ -1219,7 +1085,7 @@ S.sheets=[];S.verdicts=[];S.stages=[];
 if(!Object.hasOwn(JOB_VIEWS,S.jobView))S.jobView="todo";
 S.posting=Array.isArray(S.posting)?S.posting.filter(p=>Object.hasOwn(POSTING,p)):[];
 if(!POSTED.some(([days])=>days===S.posted))S.posted=null;
-const save=()=>store.set("state",{view:S.view,jobView:S.jobView,regions:S.regions,posting:S.posting,posted:S.posted,minScore:S.minScore,sort:S.sort,group:S.group,sel:S.sel});
+const save=()=>store.set("state",{jobView:S.jobView,regions:S.regions,posting:S.posting,posted:S.posted,minScore:S.minScore,sort:S.sort,group:S.group,sel:S.sel});
 const key=j=>j._sheet+"|"+j._row;
 const byKey=k=>D.jobs.find(j=>key(j)===k);
 const sheetShort=s=>s.replace(/\s*\((\d{4}-\d{2}-\d{2})\)$/,"").replace(/\s*\(evening\)$/," (evening)");
@@ -1411,14 +1277,14 @@ Object.assign(TILE_COLORS, {
 });
 
 const METRIC_DEFS = [
- { id: "all", key: "total", label: "Tracked", color: "var(--ink)", strokeWidth: 2.8, area: true },
- { id: "review", key: "review", label: "Review", color: "var(--tc-wish, #7c3aed)", strokeWidth: 2.0 },
- { id: "apply", key: "apply", label: "Apply", color: "var(--tc-ready, #d97706)", strokeWidth: 2.0 },
- { id: "applied", key: "applied", label: "Applied", color: "var(--tc-applied, #0284c7)", strokeWidth: 2.0 },
- { id: "interview", key: "interview", label: "Interview", color: "var(--tc-interview, #db2777)", strokeWidth: 2.0 },
- { id: "offer", key: "offer", label: "Offer", color: "var(--tc-offer, #10b981)", strokeWidth: 2.0 },
- { id: "rejected", key: "rejected", label: "Rejected", color: "var(--tc-rejected, #dc2626)", strokeWidth: 1.8 },
- { id: "skipped", key: "skipped", label: "Skipped", color: "var(--tc-skipped, #64748b)", strokeWidth: 1.8 }
+ { id: "all", key: "total", label: "All jobs", color: "var(--ink)", strokeWidth: 2.8, area: true },
+ ...STAGES.filter(s=>s.id!=="other").map(s => ({
+  id: s.id,
+  key: s.id,
+  label: s.label,
+  color: TILE_COLORS[s.id] || (s.id==="offer"?"var(--tc-offer, #10b981)":s.id==="rejected"?"var(--tc-rejected, #dc2626)":s.id==="skipped"?"var(--tc-skipped, #64748b)":s.c),
+  strokeWidth: (s.id==="rejected"||s.id==="skipped")?1.8:2.0
+ }))
 ];
 
 function getMetricTimeline(js, C, range) {
@@ -1562,15 +1428,7 @@ function sankey(js, C, phone){
  return rollercoasterChart(js, C);
 }
 function schematicSankey(js, C, phone = innerWidth < 960) {
-  const SH = {
-    review: "Review",
-    apply: "Apply",
-    applied: "Applied",
-    interview: "Interview",
-    offer: "Offer",
-    rejected: "Rejected",
-    skipped: "Skipped"
-  };
+  const SH = Object.fromEntries(STAGES.map(s => [s.id, s.label]));
   const N = {};
   const D_COLS = { review: 0, apply: 1, skipped: 1, applied: 2, interview: 3, rejected: 3, offer: 4 };
   const P_ROWS = { review: 0, apply: 1, skipped: 1, applied: 2, interview: 3, rejected: 3, offer: 4 };
@@ -1710,15 +1568,12 @@ function schematicSankey(js, C, phone = innerWidth < 960) {
    Clean frontend presentation ready for optional backend stage transitions or historical timeline wiring. */
 function donutChart(js, C){
  const total = C.total || 0;
- const stages = [
-  { id: "review", label: "Review", col: "var(--tc-wish, #8b5cf6)", val: C.review || 0 },
-  { id: "apply", label: "Apply", col: "var(--tc-ready, #f59e0b)", val: C.apply || 0 },
-  { id: "applied", label: "Applied", col: "var(--tc-applied, #0284c7)", val: C.applied || 0 },
-  { id: "interview", label: "Interview", col: "var(--tc-interview, #db2777)", val: C.interview || 0 },
-  { id: "offer", label: "Offer", col: "var(--tc-offer, #10b981)", val: C.offer || 0 },
-  { id: "rejected", label: "Rejected", col: "var(--tc-rejected, #ef4444)", val: C.rejected || 0 },
-  { id: "skipped", label: "Skipped", col: "var(--tc-skipped, #64748b)", val: C.skipped || 0 }
- ];
+ const stages = STAGES.filter(s => s.id !== "other" && s.id !== "tracked").map(s => ({
+  id: s.id,
+  label: s.label,
+  col: TILE_COLORS[s.id] || (s.id==="offer"?"var(--tc-offer, #10b981)":s.id==="rejected"?"var(--tc-rejected, #ef4444)":s.id==="skipped"?"var(--tc-skipped, #64748b)":s.c),
+  val: C[s.id] || 0
+ }));
  if(C.other) stages.push({ id: "other", label: "Other", col: "var(--tc-skipped)", val: C.other || 0 });
  const activeStages = stages.filter(s => s.val > 0);
  const R = 64, circ = 2 * Math.PI * R;
@@ -1919,7 +1774,7 @@ function overview(js){const st=j=>stageOf(j).id,C=counts(js);
  const SUB=Object.assign({
   tracked:"Found, not looked at yet",
   review:"Looking at it; Fit shows here",
-  apply:`${C.cvready||0} CV ready · ${C.drafted||0} drafted`,
+  apply:`${C.cvready||0} ready · ${C.drafted||0} drafted`,
   skipped:"Decided not to apply",
   applied:"Waiting on a reply",
   interview:"In interviews now",
@@ -1931,7 +1786,7 @@ function overview(js){const st=j=>stageOf(j).id,C=counts(js);
  // Exact 8 stages matching the mockup header
  const stageOrder = ["tracked", "review", "apply", "applied", "interview", "offer", "rejected", "skipped"];
  const T = stageOrder.map(id => {
-  if(id === "tracked") return [C.total, "Tracked", `${C.sent} application${C.sent===1?"":"s"} so far`, "--ink", "all"];
+  if(id === "tracked") return [C.total, "All jobs", `${C.sent} application${C.sent===1?"":"s"} so far`, "--ink", "all"];
   const s = STAGES.find(x => x.id === id);
   const label = s ? s.label : (id.charAt(0).toUpperCase() + id.slice(1));
   const col = TILE_COLORS[id] || (s ? s.c : "--mute");
@@ -2016,7 +1871,7 @@ function overview(js){const st=j=>stageOf(j).id,C=counts(js);
       ${av(j.Company,"sm")}
       <span class="t">
        <b>${esc(j.Company)}</b>
-       <small style="color:var(--mute)"><span>${esc(j.Role)}</span><span class="ov-stage-tag"><i class="dot" style="background:${stageColor(st)}"></i>${esc(sl(j["My status"]))}</span></small>
+       <small style="color:var(--mute)"><span>${esc(j.Role)}</span><span class="ov-stage-tag"><i class="dot" style="background:${TILE_COLORS[st?.id]||stageColor(st)}"></i>${esc(sl(j["My status"]))}</span></small>
       </span>
       ${ring(j._sc, 30)}
       <span class="ov-item-arrow">→</span>
@@ -2047,11 +1902,7 @@ function overview(js){const st=j=>stageOf(j).id,C=counts(js);
  </div>
 </div>`}
 
-const stageColor=s=>{
- if(!s) return "var(--mute)";
- const id=s.id;
- return TILE_COLORS[id] || (id==="review"?"var(--tc-wish, #7c3aed)":id==="apply"?"var(--tc-ready, #d97706)":id==="applied"?"var(--tc-applied, #0284c7)":id==="interview"?"var(--tc-interview, #db2777)":id==="offer"?"var(--tc-offer, #059669)":id==="rejected"?"var(--tc-rejected, #dc2626)":id==="skipped"?"var(--tc-skipped, #64748b)":s.c||"var(--mute)");
-};
+const stageColor=s=>s?s.c:"var(--mute)";
 
 function nextStep(j){const st=stageOf(j);return{title:st.means||"Review role details",attn:!!attention(j)}}
 function contactFor(j){
