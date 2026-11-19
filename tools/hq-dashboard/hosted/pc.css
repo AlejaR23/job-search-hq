@@ -1,49 +1,49 @@
 /* PC Documents tab. Claude · HQ Builder (Opus), 2026-11-05. */
-.doc-sec{margin:16px 0 6px;font-size:13px;font-weight:600;color:var(--ink2);text-transform:none}
-.doc-sec:first-of-type{margin-top:4px}
+.doc-sec{margin:18px 0 8px;font-family:var(--font-display, system-ui);font-size:12px;font-weight:600;color:var(--mute);text-transform:uppercase;letter-spacing:0.04em;display:flex;align-items:center;gap:8px}
+.doc-sec::after{content:"";flex:1;height:1px;background:var(--line)}
+.doc-sec:first-of-type{margin-top:8px}
 .pc-dl{flex:none}
 .pc-acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
-.report{margin-top:14px;background:var(--soft);border-radius:12px;padding:14px 16px;min-width:0;overflow-wrap:anywhere;scroll-margin-top:calc(var(--stick,0px) + 8px)}
-.report .doc-h h3{font-size:15px}
-.rep-body{font-size:13.5px;line-height:1.55;color:var(--ink)}
+.report{margin-top:14px;background:var(--soft);border-radius:var(--r,16px);padding:14px 16px;min-width:0;overflow-wrap:anywhere;scroll-margin-top:calc(var(--stick,0px) + 8px)}
+.report .doc-h h3{font-family:var(--font-display, system-ui);font-size:15px}
+.rep-body{font-size:13.5px;line-line:1.55;color:var(--ink)}
 .rep-body h3,.rep-body h4,.rep-body h5{margin:14px 0 4px;font-size:14px}
-.rep-body h3{font-size:15.5px}
+.rep-body h3{font-family:var(--font-display, system-ui);font-size:15.5px}
 .rep-body p{margin:0 0 8px}
 .rep-body ul{margin:0 0 8px;padding-left:18px}
 .rep-body ul.rep-rows{list-style:none;padding:0;display:grid;gap:6px}
-.rep-rows li{background:var(--card);border-radius:10px;padding:8px 10px;display:grid;gap:2px}
+.rep-rows li{background:var(--card);border-radius:var(--r-sm,10px);padding:8px 10px;display:grid;gap:2px}
 @media (max-width:900px){.pc-acts{flex:1 1 100%}.pc-acts .btn{flex:1 1 0;justify-content:center}.cvl .pc-dl{margin-left:auto}}
-/* Allow fractional flex shrink: intrinsic label widths plus gaps can exceed the
-   phone strip by a pixel. Otherwise viewShown() scrolls it when tabs change.
-   The shared 44px minimum still preserves each button's touch target.
-   Merged with private Search styles. */
-@media (max-width:560px){.seg button{flex:1 1 auto;padding:7px 4px;gap:4px}}
-/* Live company-board search. */
-.pc-search-help{margin:-6px 0 0;font-size:12px;line-height:1.5}
+/* Allow fractional flex shrink */
+@media (max-width:560px){.seg button{flex:1 1 auto;padding:7px 2px;gap:4px}}
+
+/* Live company-board search */
+.pc-search-help{margin:-6px 0 0;font-size:12px;line-height:1.5;color:var(--mute)}
 .pc-search-check{display:flex;align-items:center;gap:10px;min-height:44px;font-size:14px;cursor:pointer}
 .pc-search-check input{width:19px;height:19px;accent-color:var(--blue)}
-.pc-search .rq-h h3{margin:0;font-size:15px;line-height:1.4;overflow-wrap:anywhere}
+.pc-search .rq-h h3{margin:0;font-family:var(--font-display, system-ui);font-size:15px;line-height:1.4;overflow-wrap:anywhere}
 .pc-search-message{font-size:13px;line-height:1.5;margin:10px 0}
 .pc-results{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:10px}
-.pc-results>li{border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0;background:var(--card);overflow-wrap:anywhere}
+.pc-results>li{border:1px solid var(--line);border-radius:var(--r,16px);padding:16px;min-width:0;background:var(--card);overflow-wrap:anywhere;box-shadow:var(--shadow)}
 .pc-result-head{display:flex;align-items:flex-start;gap:10px;justify-content:space-between}
 .pc-result-head .t{min-width:0}
-.pc-result-head h4{font-size:15px;line-height:1.4;margin:0 0 4px;color:var(--ink)}
+.pc-result-head h4{font-family:var(--font-display, system-ui);font-size:15px;line-height:1.4;margin:0 0 4px;color:var(--ink)}
 .pc-result-head p{font-size:13px;line-height:1.5;margin:0;color:var(--ink2)}
 .pc-result-head .chip{flex:none}
 .pc-result-summary{font-size:13px;line-height:1.5;margin:10px 0}
-.pc-result-source{font-size:12px;line-height:1.5;margin:8px 0 10px}
+.pc-result-source{font-size:12px;line-height:1.5;margin:8px 0 10px;color:var(--mute)}
 .pc-result-actions{display:flex;flex-wrap:wrap;gap:8px}
 .pc-result-actions .btn{text-decoration:none;min-height:40px;justify-content:center}
 @media (max-width:560px){.pc-result-head{flex-wrap:wrap}.pc-result-actions .btn{flex:1 1 120px;min-height:44px}.pc-results>li{padding:12px}}
 
-/* Document origins in the job drawer. */
+/* Document origins in the job drawer */
 .pc-job-docs{flex:1 1 100%;min-width:0;overflow-wrap:anywhere}
 .pc-job-file{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:8px 0}
 .pc-job-file>span{flex:1 1 220px;min-width:0}
 .pc-job-file .btn{white-space:normal;max-width:100%}
 .pc-older p{margin:12px 0 8px;font-weight:600}
 #evidence-notes{overflow-wrap:anywhere}
+
 /* PC save notices. */
 #pc-saves{flex-wrap:wrap;align-items:center;margin:10px 16px;opacity:1;transition:opacity 180ms ease}
 #pc-saves>span{flex:1 1 240px;min-width:0;overflow-wrap:anywhere}

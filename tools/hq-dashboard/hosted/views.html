@@ -1,37 +1,225 @@
 <section id="v-search" hidden><div class="tool-in">
- <div class="panel"><div class="panel-h"><h2>New job search</h2></div>
-  <p class="lede">{{SEARCH_HELP}}</p>
-  <form id="f-search" class="form2" novalidate>
-   <label class="f full"><span>What to look for <span class="req">*</span></span><input class="inp" id="s-what" maxlength="300" placeholder="e.g. AI operations or AI automation roles, entry to mid level"></label>
-   <label class="f">Where<input class="inp" id="s-where" maxlength="120" placeholder="{{LOCATION_PLACEHOLDER}}"></label>
-   <label class="f">Level<select class="inp" id="s-level"><option value="">Any level</option><option>Entry</option><option>Mid</option><option>Senior</option></select></label>
-   <label class="f full">Anything else<textarea class="inp" id="s-notes" rows="3" maxlength="1000" placeholder="Companies to include or avoid, salary floor, languages…"></textarea></label>
-   <p id="s-err" class="banner full" hidden></p>
-   <div class="full tool-foot"><small id="s-msg"></small><button class="btn" id="s-go" type="submit">Queue search</button></div>
-  </form></div>
- <div class="panel"><div class="panel-h"><h2>Your searches</h2></div><div id="requests" class="rqs"><p class="mut">Loading…</p></div></div>
+ <div class="ov-header">
+  <div class="ov-title-wrap">
+   <div class="ov-crumb">AUTOMATION · SEARCH</div>
+   <h1 class="ov-title">Job Search Assistant</h1>
+  </div>
+  <p class="ov-subtitle">{{SEARCH_HELP}}</p>
+ </div>
+ <div class="search-layout">
+  <form id="f-search" class="search-bento" novalidate>
+   <div class="bento-card bento-card-hero">
+    <div class="bento-card-h">
+     <div class="bento-icon-badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+     </div>
+     <div class="bento-card-title-group">
+      <div class="bento-card-title-row">
+       <h3>What to look for</h3>
+       <span class="bento-badge req">Required</span>
+      </div>
+      <p class="bento-card-desc">Target titles, keywords, skills, or operational domains</p>
+     </div>
+    </div>
+    <div class="bento-card-body">
+     <label for="s-what" class="sr">What to look for</label>
+     <input class="inp s-inp-hero" id="s-what" maxlength="300" placeholder="e.g. AI operations or AI automation roles, entry to mid level" autocomplete="off">
+     <div class="s-quick-chips">
+      <span class="s-chips-label">Quick picks:</span>
+      <button type="button" class="s-chip" data-fill="AI Operations">AI Operations</button>
+      <button type="button" class="s-chip" data-fill="Full Stack Engineer">Full Stack</button>
+      <button type="button" class="s-chip" data-fill="Automation Specialist">Automation</button>
+      <button type="button" class="s-chip" data-fill="Prompt Engineer">Prompt Engineer</button>
+      <button type="button" class="s-chip" data-fill="Technical Product Manager">Product Mgr</button>
+     </div>
+    </div>
+   </div>
+
+   <div class="bento-card">
+    <div class="bento-card-h">
+     <div class="bento-icon-badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+     </div>
+     <div class="bento-card-title-group">
+      <div class="bento-card-title-row">
+       <h3>Where</h3>
+       <span class="bento-badge opt">Optional</span>
+      </div>
+      <p class="bento-card-desc">Geographic region or remote preference</p>
+     </div>
+    </div>
+    <div class="bento-card-body">
+     <label for="s-where" class="sr">Where</label>
+     <input class="inp" id="s-where" maxlength="120" placeholder="Remote, your country, Spain…">
+     <div class="s-quick-chips">
+      <button type="button" class="s-chip" data-fill="Remote">Remote</button>
+      <button type="button" class="s-chip" data-fill="LATAM / Remote">LATAM</button>
+      <button type="button" class="s-chip" data-fill="USA / Remote">USA</button>
+      <button type="button" class="s-chip" data-fill="Europe / Remote">Europe</button>
+     </div>
+    </div>
+   </div>
+
+   <div class="bento-card">
+    <div class="bento-card-h">
+     <div class="bento-icon-badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+     </div>
+     <div class="bento-card-title-group">
+      <div class="bento-card-title-row">
+       <h3>Level</h3>
+       <span class="bento-badge opt">Optional</span>
+      </div>
+      <p class="bento-card-desc">Seniority tier for matching opportunities</p>
+     </div>
+    </div>
+    <div class="bento-card-body">
+     <div class="s-level-pills" id="s-level-picker" role="radiogroup" aria-label="Seniority Level">
+      <button type="button" class="s-lvl-btn active" data-lvl="">Any level</button>
+      <button type="button" class="s-lvl-btn" data-lvl="Entry">Entry</button>
+      <button type="button" class="s-lvl-btn" data-lvl="Mid">Mid</button>
+      <button type="button" class="s-lvl-btn" data-lvl="Senior">Senior</button>
+     </div>
+     <label for="s-level" class="sr">Level</label>
+     <select class="inp s-lvl-select" id="s-level"><option value="">Any level</option><option>Entry</option><option>Mid</option><option>Senior</option></select>
+    </div>
+   </div>
+
+   <div class="bento-card bento-card-full">
+    <div class="bento-card-h">
+     <div class="bento-icon-badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+     </div>
+     <div class="bento-card-title-group">
+      <div class="bento-card-title-row">
+       <h3>Anything else</h3>
+       <span class="bento-badge opt">Optional</span>
+      </div>
+      <p class="bento-card-desc">Companies to include or avoid, salary floor, languages…</p>
+     </div>
+    </div>
+    <div class="bento-card-body">
+     <label for="s-notes" class="sr">Anything else</label>
+     <textarea class="inp s-notes-area" id="s-notes" rows="3" maxlength="1000" placeholder="Companies to include or avoid, salary floor, languages…"></textarea>
+     <div class="s-quick-chips">
+      <span class="s-chips-label">Suggestions:</span>
+      <button type="button" class="s-chip" data-append="Salary floor $80k USD">+ Min $80k</button>
+      <button type="button" class="s-chip" data-append="Exclude third-party staffing agencies">+ Exclude agencies</button>
+      <button type="button" class="s-chip" data-append="English required">+ English fluent</button>
+      <button type="button" class="s-chip" data-append="B2B SaaS product companies">+ B2B SaaS</button>
+     </div>
+    </div>
+   </div>
+
+   <div class="bento-card bento-card-action">
+    <p id="s-err" class="banner full" hidden></p>
+    <div class="bento-action-row">
+     <div class="bento-action-info">
+      <span class="bento-status-dot" aria-hidden="true"></span>
+      <small id="s-msg">Ready to queue for the next scheduled crawler cycle.</small>
+     </div>
+     <div class="bento-action-btns">
+      <button class="btn btn-secondary" type="reset" id="s-reset">Clear</button>
+      <button class="btn" id="s-go" type="submit">
+       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
+       <span>Queue search</span>
+      </button>
+     </div>
+    </div>
+   </div>
+  </form>
+
+  <aside class="search-aside">
+   <div class="panel bento-card bento-aside-card">
+    <div class="panel-h">
+     <div class="bento-icon-badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+     </div>
+     <div class="bento-card-title-group">
+      <h2>Your searches</h2>
+      <p class="bento-card-desc">Recent search activity</p>
+     </div>
+    </div>
+    <div id="requests" class="rqs"><p class="mut">Loading…</p></div>
+   </div>
+
+   <div class="panel bento-card bento-guide-card">
+    <div class="panel-h">
+     <div class="bento-icon-badge guide-badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+     </div>
+     <div class="bento-card-title-group">
+      <h3 style="margin:0;font-size:14px;font-family:var(--font-display, system-ui)">How discovery works</h3>
+     </div>
+    </div>
+    <ul class="discovery-steps">
+     <li>
+      <span class="step-num" aria-hidden="true">1</span>
+      <div class="step-text"><b>Set your criteria</b><p>Enter the roles and locations you want to search for.</p></div>
+     </li>
+     <li>
+      <span class="step-num" aria-hidden="true">2</span>
+      <div class="step-text"><b>Search company boards</b><p>On the PC, select Search now to find current openings on the configured boards.</p></div>
+     </li>
+     <li>
+      <span class="step-num" aria-hidden="true">3</span>
+      <div class="step-text"><b>Review matching leads</b><p>On the PC, select Add to tracker for each result you want to keep.</p></div>
+     </li>
+    </ul>
+   </div>
+  </aside>
+ </div>
 </div></section>
 <section id="v-review" hidden><div class="tool-in">
+ <div class="ov-header">
+  <div class="ov-title-wrap">
+   <div class="ov-crumb">DOCUMENTS · EVIDENCE</div>
+   <h1 class="ov-title">Documents &amp; Tailored CVs</h1>
+  </div>
+  <p class="ov-subtitle">Tailored CVs, customized cover letters, and AI posting fit analysis aligned with your evidence bank.</p>
+ </div>
+ <div class="docs-grid">
+  <div class="docs-main-col">
+   <div class="panel docs-panel"><div class="panel-h">
+    <div class="bento-icon-badge">
+     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+    </div>
+    <div class="bento-card-title-group">
+     <h2>Review a posting</h2>
+     <p class="bento-card-desc">Evaluate fit against your evidence bank and draft tailored materials</p>
+    </div>
+   </div>
+    <p class="lede">Add a screenshot or photo of a job, or paste its text. Claude reads it, scores it against your evidence bank and shows the fit. Then you choose whether to create a CV and a cover letter. They stay drafts until a truth review.</p>
+    <form id="f-review" class="form2" novalidate>
+     <p id="r-hint" class="banner n full" hidden></p>
+     <div class="full ph" id="r-photos" hidden>
+      <div class="ph-row"><label class="btn ghost" for="r-file" id="r-add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="15" rx="2.5"/><circle cx="9" cy="10.5" r="1.7"/><path d="m21 16-4.5-4.5L7 20"/></svg>Add photos</label><small class="mut" id="r-cap"></small></div>
+      <input class="sr" id="r-file" type="file" multiple aria-label="Add photos of the posting">
+      <ul class="thumbs" id="r-thumbs" hidden></ul>
+     </div>
+     <label class="f full">Posting text<textarea class="inp" id="r-text" rows="8" maxlength="40000" placeholder="Paste the whole posting: responsibilities, requirements, location, terms. Not needed if you added photos."></textarea></label>
+     <label class="f">Company (optional)<input class="inp" id="r-company" maxlength="120"></label>
+     <label class="f">Role (optional)<input class="inp" id="r-role" maxlength="200"></label>
+     <label class="f full">Link to posting (optional)<input class="inp" id="r-link" type="url" maxlength="500" placeholder="https://"></label>
+     <p id="r-err" class="banner full" hidden></p>
+     <div id="r-op" class="full" hidden></div>
+     <div class="full tool-foot"><small id="r-msg"></small><button class="btn" id="r-go" type="submit">Analyze</button></div>
+    </form></div>
+   <div id="result"></div>
+  </div>
+  <div class="docs-side-col">
  <div class="panel"><div class="panel-h"><h2>Your CVs</h2></div>
   <p class="lede">Your tailored CVs as Word files. On the iPhone a download lands in Files › Downloads. They're also in {{COPY_CVS}}, refreshed by the {{SCAN_TIME}} run.</p>
   <div id="cvs"><p class="mut">Loading…</p></div></div>
- <div class="panel"><div class="panel-h"><h2>Review a posting</h2></div>
-  <p class="lede">Add a screenshot or photo of a job, or paste its text. Claude reads it, scores it against your evidence bank and shows the fit. Then you choose whether to create a CV and a cover letter. They stay drafts until the {{SCAN_TIME}} truth review.</p>
-  <form id="f-review" class="form2" novalidate>
-   <p id="r-hint" class="banner n full" hidden></p>
-   <div class="full ph" id="r-photos" hidden>
-    <div class="ph-row"><label class="btn ghost" for="r-file" id="r-add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="15" rx="2.5"/><circle cx="9" cy="10.5" r="1.7"/><path d="m21 16-4.5-4.5L7 20"/></svg>Add photos</label><small class="mut" id="r-cap"></small></div>
-    <input class="sr" id="r-file" type="file" multiple aria-label="Add photos of the posting">
-    <ul class="thumbs" id="r-thumbs" hidden></ul>
-   </div>
-   <label class="f full">Posting text<textarea class="inp" id="r-text" rows="8" maxlength="40000" placeholder="Paste the whole posting: responsibilities, requirements, location, terms. Not needed if you added photos or a link."></textarea></label>
-   <label class="f">Company (optional)<input class="inp" id="r-company" maxlength="120"></label>
-   <label class="f">Role (optional)<input class="inp" id="r-role" maxlength="200"></label>
-   <label class="f full">Link to posting (HQ will try to read it)<input class="inp" id="r-link" type="url" maxlength="500" placeholder="https://"></label>
-   <p id="r-err" class="banner full" hidden></p>
-   <div id="r-op" class="full" hidden></div>
-   <div class="full tool-foot"><small id="r-msg"></small><button class="btn" id="r-go" type="submit">Analyze</button></div>
-  </form></div>
- <div id="result"></div>
- <div class="panel"><div class="panel-h"><h2>Past reviews</h2></div><div id="postings"><p class="mut">Loading…</p></div></div>
+   <div class="panel docs-panel"><div class="panel-h">
+    <div class="bento-icon-badge">
+     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
+    </div>
+    <div class="bento-card-title-group">
+     <h2>Past reviews</h2>
+     <p class="bento-card-desc">History of analyzed postings and matches</p>
+    </div>
+   </div><div id="postings"><p class="mut">Loading…</p></div></div>
+  </div>
+ </div>
 </div></section>
