@@ -15,6 +15,35 @@ function renderRequests(docs){const rs=docs.filter(d=>d.kind==="search").sort((a
   return`<article class="rq"><div class="rq-h"><b>${esc(r.what)}</b><span class="chip ${c}"><i class="dot"></i>${esc(l)}</span></div>
   <div class="d-meta">${[r.where,r.level,String(r.createdAt||"").slice(0,10)].filter(Boolean).map(x=>`<span>${esc(x)}</span>`).join("")}</div>
   ${r.notes?`<p class="mut">${esc(r.notes)}</p>`:""}${r.result?`<p>${esc(r.result)}</p>`:""}</article>`}).join(""):`<p class="mut">No searches yet. Each one shows here with its status.</p>`}
+document.addEventListener("click",e=>{
+ const chip=e.target.closest("#f-search .s-chip");
+ if(chip){
+  if(chip.dataset.fill){
+   const inp=chip.closest(".bento-card")?.querySelector("input");
+   if(inp){inp.value=chip.dataset.fill;inp.dispatchEvent(new Event("input",{bubbles:true}));inp.focus()}
+  }else if(chip.dataset.append){
+   const ta=$("#s-notes");
+   if(ta){const c=ta.value.trim();ta.value=c?c+"\n"+chip.dataset.append:chip.dataset.append;ta.dispatchEvent(new Event("input",{bubbles:true}));ta.focus()}
+  }
+  return;
+ }
+ const lvl=e.target.closest("#f-search .s-lvl-btn");
+ if(lvl){
+  const sel=$("#s-level");
+  if(sel){
+   sel.value=lvl.dataset.lvl||"";
+   sel.dispatchEvent(new Event("change",{bubbles:true}));
+   $$("#s-level-picker .s-lvl-btn").forEach(b=>b.classList.toggle("active",b===lvl));
+  }
+ }
+});
+$("#f-search")?.addEventListener("reset",()=>{
+ setTimeout(()=>$$("#s-level-picker .s-lvl-btn").forEach(b=>b.classList.toggle("active",!b.dataset.lvl)),10);
+});
+$("#s-level")?.addEventListener("change",()=>{
+ const v=$("#s-level")?.value;
+ $$("#s-level-picker .s-lvl-btn").forEach(b=>b.classList.toggle("active",(b.dataset.lvl||"")===v));
+});
 
 /* ---------- review a posting: read it (text or photos), compare, then draft a CV or letter when asked ---------- */
 let POSTINGS=[],CUR=null,REVIEW_JOB="",PH=null,IMGS=[],IMGQ=Promise.resolve(),imgN=0,OP=null,AI_OFF="",UNSAVED=null,CERR=null,draftT;
