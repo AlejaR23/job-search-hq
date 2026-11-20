@@ -99,7 +99,7 @@ a{color:var(--blue-ink)}
 .right{display:flex;align-items:center;justify-content:flex-end;gap:8px;min-width:0;width:100%;justify-self:end}
 .actions{display:flex;align-items:center;gap:8px;flex:none}
 @media (min-width:901px) and (max-width:1280px){
- .top-in{grid-template-columns:1fr auto 1fr;gap:10px;padding:10px 32px}
+ .top-in{grid-template-columns:minmax(0,1fr) auto minmax(300px,1.5fr);gap:10px;padding-inline:16px}
  .actions{gap:6px}
  .actions .btn,.actions #fbtn{padding-inline:8px}
  .actions .btn .l{display:none}
